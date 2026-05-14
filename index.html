@@ -3,135 +3,652 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fun Page</title>
+  <title>Fun Zone 🎮</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
-      min-height: 100vh;
-      background: #0f0f1a;
-      color: white;
-      font-family: 'Segoe UI', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
+    :root {
+      --bg: #0f0f1a;
+      --card: #1a1a2e;
+      --accent: #ff6ec7;
     }
 
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* STARS BACKGROUND */
+    #stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+
+    .content { position: relative; z-index: 1; }
+
+    /* NAV */
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      flex-wrap: wrap;
+    }
+
+    nav button {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      padding: 8px 20px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    nav button:hover, nav button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* SECTIONS */
+    section {
+      display: none;
+      padding: 40px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      animation: fadeIn 0.4s ease;
+    }
+
+    section.active { display: block; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
     h1 {
-      font-size: 3rem;
-      background: linear-gradient(90deg, #ff6ec7, #ffdd57, #57f287, #5865f2);
-      background-size: 300%;
+      font-size: 2.8rem;
+      text-align: center;
+      background: linear-gradient(90deg, #ff6ec7, #ffdd57, #57f287, #5865f2, #ff6ec7);
+      background-size: 400%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: rainbow 3s linear infinite;
+      animation: rainbow 4s linear infinite;
       margin-bottom: 10px;
     }
 
-    @keyframes rainbow {
-      0% { background-position: 0%; }
-      100% { background-position: 300%; }
+    @keyframes rainbow { 0% { background-position: 0%; } 100% { background-position: 400%; } }
+
+    h2 { font-size: 1.6rem; margin-bottom: 20px; text-align: center; color: #ccc; }
+
+    /* HERO */
+    .hero {
+      text-align: center;
+      padding: 60px 20px;
     }
 
-    p {
-      color: #aaa;
-      margin-bottom: 30px;
-      font-size: 1.1rem;
-    }
+    .hero p { color: #aaa; font-size: 1.1rem; margin: 10px 0 30px; }
 
-    .buttons {
+    .btn-grid {
       display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
+      gap: 12px;
       justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
     }
 
-    button {
-      padding: 12px 28px;
+    .btn {
+      padding: 12px 24px;
       border: none;
       border-radius: 50px;
       font-size: 1rem;
       cursor: pointer;
-      transition: transform 0.1s, box-shadow 0.2s;
+      transition: transform 0.15s, box-shadow 0.2s;
+      font-weight: bold;
     }
 
-    button:hover { transform: scale(1.1); }
-    button:active { transform: scale(0.95); }
+    .btn:hover { transform: scale(1.08); box-shadow: 0 0 20px rgba(255,110,199,0.5); }
+    .btn:active { transform: scale(0.95); }
+    .btn-pink   { background: #ff6ec7; color: #fff; }
+    .btn-yellow { background: #ffdd57; color: #333; }
+    .btn-green  { background: #57f287; color: #333; }
+    .btn-blue   { background: #5865f2; color: #fff; }
+    .btn-red    { background: #ff4444; color: #fff; }
 
-    #confetti-btn { background: #ff6ec7; color: #fff; }
-    #emoji-btn    { background: #ffdd57; color: #333; }
-    #dark-btn     { background: #5865f2; color: #fff; }
+    #emoji-display { font-size: 5rem; text-align: center; margin: 20px 0; transition: transform 0.2s; }
 
-    #emoji-display {
-      font-size: 4rem;
-      height: 80px;
-      margin-top: 30px;
+    .gojo-container {
+      display: flex;
+      justify-content: center;
+      margin: 30px 0 10px;
+    }
+
+    .gojo-img {
+      width: 220px;
+      height: 220px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 4px solid #5865f2;
+      box-shadow: 0 0 30px rgba(88,101,242,0.7), 0 0 60px rgba(255,110,199,0.3);
+      animation: gojoPulse 3s ease-in-out infinite;
+      transition: transform 0.3s;
+    }
+
+    .gojo-img:hover {
+      transform: scale(1.08) rotate(3deg);
+      box-shadow: 0 0 50px rgba(88,101,242,1), 0 0 80px rgba(255,110,199,0.6);
+    }
+
+    .gojo-label {
+      text-align: center;
+      font-size: 1rem;
+      color: #aaa;
+      margin-top: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    @keyframes gojoPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(88,101,242,0.7), 0 0 60px rgba(255,110,199,0.3); }
+      50%       { box-shadow: 0 0 50px rgba(88,101,242,1),   0 0 90px rgba(255,110,199,0.6); }
+    }
+
+    /* MOOD TRACKER */
+    .mood-grid { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
+
+    .mood-card {
+      background: var(--card);
+      border: 2px solid transparent;
+      border-radius: 16px;
+      padding: 20px;
+      font-size: 2.5rem;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      min-width: 100px;
+    }
+
+    .mood-card:hover { border-color: var(--accent); transform: scale(1.1); }
+    .mood-card span { display: block; font-size: 0.8rem; color: #aaa; margin-top: 5px; }
+    #mood-result { text-align: center; font-size: 1.2rem; margin-top: 20px; min-height: 40px; color: #ffdd57; }
+
+    /* QUIZ */
+    .quiz-box {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 30px;
+    }
+
+    #quiz-question { font-size: 1.3rem; margin-bottom: 20px; line-height: 1.5; }
+
+    .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .quiz-opt {
+      background: rgba(255,255,255,0.07);
+      border: 2px solid rgba(255,255,255,0.1);
+      color: white;
+      padding: 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .quiz-opt:hover { border-color: #5865f2; background: rgba(88,101,242,0.2); }
+    .quiz-opt.correct { border-color: #57f287; background: rgba(87,242,135,0.2); }
+    .quiz-opt.wrong   { border-color: #ff4444; background: rgba(255,68,68,0.2); }
+
+    #quiz-feedback { text-align: center; margin-top: 15px; font-size: 1.1rem; min-height: 30px; }
+    #quiz-score    { text-align: center; font-size: 1rem; color: #aaa; margin-bottom: 15px; }
+
+    /* DRAW PAD */
+    #canvas {
+      display: block;
+      margin: 0 auto;
+      border-radius: 12px;
+      cursor: crosshair;
+      touch-action: none;
+      background: #1a1a2e;
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+
+    .draw-controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 15px 0;
+    }
+
+    .color-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
       transition: transform 0.2s;
     }
 
+    .color-dot:hover, .color-dot.selected { transform: scale(1.3); border-color: white; }
+
+    .size-btn {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .size-btn:hover { background: rgba(255,255,255,0.2); }
+
+    /* COUNTER GAME */
+    .counter-box { text-align: center; }
+    #big-number {
+      font-size: 8rem;
+      font-weight: bold;
+      color: var(--accent);
+      line-height: 1;
+      margin: 20px 0;
+      text-shadow: 0 0 40px rgba(255,110,199,0.6);
+      transition: transform 0.1s;
+    }
+
+    #big-number.pop { transform: scale(1.2); }
+    #click-msg { font-size: 1rem; color: #aaa; margin-bottom: 20px; }
+    #milestone { font-size: 1.3rem; color: #ffdd57; min-height: 30px; margin: 10px 0; }
+    #speed-display { font-size: 0.9rem; color: #888; }
+
+    /* PARTICLES */
     .particle {
       position: fixed;
       pointer-events: none;
       border-radius: 50%;
       animation: fall 1.5s ease-out forwards;
+      z-index: 999;
     }
 
     @keyframes fall {
-      0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
-      100% { opacity: 0; transform: translateY(400px) rotate(720deg); }
+      0%   { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+      100% { opacity: 0; transform: translateY(500px) rotate(720deg) scale(0); }
+    }
+
+    /* SCROLL TOAST */
+    #toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(30,30,50,0.95);
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      transition: transform 0.4s ease;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* CURSOR TRAIL */
+    .trail {
+      position: fixed;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: trailFade 0.6s ease-out forwards;
+      z-index: 9999;
+    }
+
+    @keyframes trailFade {
+      0%   { opacity: 0.8; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0); }
     }
   </style>
 </head>
 <body>
 
-  <h1>Hey There! 👋</h1>
-  <p>This is your fun GitHub Workshop page.</p>
+<canvas id="stars"></canvas>
 
-  <div class="buttons">
-    <button id="confetti-btn" onclick="launchConfetti()">🎉 Confetti!</button>
-    <button id="emoji-btn" onclick="randomEmoji()">😎 Random Emoji</button>
-    <button id="dark-btn" onclick="toggleBg()">🌈 Change BG</button>
-  </div>
+<div class="content">
+  <nav>
+    <button class="active" onclick="showSection('home', this)">🏠 Home</button>
+    <button onclick="showSection('mood', this)">😊 Mood</button>
+    <button onclick="showSection('quiz', this)">🧠 Quiz</button>
+    <button onclick="showSection('draw', this)">🎨 Draw</button>
+    <button onclick="showSection('counter', this)">👆 Clicker</button>
+  </nav>
 
-  <div id="emoji-display">🚀</div>
+  <!-- HOME -->
+  <section id="home" class="active">
+    <div class="hero">
+      <h1>Fun Zone 🎮</h1>
+      <p>Confetti · Emojis · Mood · Quiz · Drawing · Clicking</p>
+      <div class="btn-grid">
+        <button class="btn btn-pink" onclick="launchConfetti()">🎉 Confetti!</button>
+        <button class="btn btn-yellow" onclick="randomEmoji()">😎 Random Emoji</button>
+        <button class="btn btn-blue" onclick="shakePage()">📳 Shake!</button>
+        <button class="btn btn-green" onclick="flipColors()">🌈 Invert</button>
+        <button class="btn btn-red" onclick="launchConfetti(true)">💥 MEGA Blast</button>
+      </div>
+      <div id="emoji-display">🚀</div>
+      <div class="gojo-container">
+        <img class="gojo-img" src="https://imgs.search.brave.com/ptpJDxhXrvbExFeeXfYk5K7vthcCCrGtif5WGdXqAKc/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzIxL2Q1/L2M5LzIxZDVjOWZk/ODBhNjE3YjExZTYw/M2M2ZWRjOWNmMWEz/LmpwZw" alt="Gojo Satoru" />
+      </div>
+      <p class="gojo-label">Gojo Satoru</p>
+    </div>
+  </section>
 
-  <script>
-    const emojis = ['🚀','🎸','🦄','🔥','💥','🎉','🐉','⚡','🍕','🎮','🦊','🌈','💎','🎯','🥳'];
-    const bgs = ['#0f0f1a','#1a0f0f','#0f1a0f','#1a1a0f','#0f0f2a'];
-    let bgIndex = 0;
+  <!-- MOOD -->
+  <section id="mood">
+    <h2>How are you feeling today?</h2>
+    <div class="mood-grid">
+      <div class="mood-card" onclick="setMood('Amazing! You must be on fire today 🔥', this)">🤩<span>Amazing</span></div>
+      <div class="mood-card" onclick="setMood('Happy vibes! Keep smiling 😄', this)">😊<span>Happy</span></div>
+      <div class="mood-card" onclick="setMood('Meh... maybe some confetti will help?', this)">😐<span>Meh</span></div>
+      <div class="mood-card" onclick="setMood('Tired? Go drink some water 💧', this)">😴<span>Tired</span></div>
+      <div class="mood-card" onclick="setMood('Stressed? Take a deep breath. You got this 💪', this)">😤<span>Stressed</span></div>
+      <div class="mood-card" onclick="setMood('Silly mode activated 🤪 Embrace it!', this)">🤪<span>Silly</span></div>
+    </div>
+    <div id="mood-result"></div>
+    <div class="btn-grid" style="margin-top:20px">
+      <button class="btn btn-pink" onclick="launchConfetti(); setMood('Confetti makes everything better! 🎉', null)">Cheer me up!</button>
+    </div>
+  </section>
 
-    function randomEmoji() {
-      const el = document.getElementById('emoji-display');
-      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-      el.style.transform = 'scale(1.5)';
-      setTimeout(() => el.style.transform = 'scale(1)', 200);
+  <!-- QUIZ -->
+  <section id="quiz">
+    <h2>🧠 Fun Quiz</h2>
+    <div id="quiz-score">Score: 0 / 0</div>
+    <div class="quiz-box">
+      <div id="quiz-question">Loading question...</div>
+      <div class="quiz-options" id="quiz-options"></div>
+      <div id="quiz-feedback"></div>
+    </div>
+    <div class="btn-grid" style="margin-top:20px">
+      <button class="btn btn-blue" onclick="nextQuestion()">Next Question ➡️</button>
+    </div>
+  </section>
+
+  <!-- DRAW -->
+  <section id="draw">
+    <h2>🎨 Draw Anything!</h2>
+    <div class="draw-controls">
+      <div class="color-dot selected" style="background:#ff6ec7" onclick="setColor('#ff6ec7', this)"></div>
+      <div class="color-dot" style="background:#ffdd57" onclick="setColor('#ffdd57', this)"></div>
+      <div class="color-dot" style="background:#57f287" onclick="setColor('#57f287', this)"></div>
+      <div class="color-dot" style="background:#5865f2" onclick="setColor('#5865f2', this)"></div>
+      <div class="color-dot" style="background:#ffffff" onclick="setColor('#ffffff', this)"></div>
+      <div class="color-dot" style="background:#ff4444" onclick="setColor('#ff4444', this)"></div>
+      <button class="size-btn" onclick="setBrush(4)">S</button>
+      <button class="size-btn" onclick="setBrush(10)">M</button>
+      <button class="size-btn" onclick="setBrush(22)">L</button>
+      <button class="size-btn" onclick="setColor('#0f0f1a'); setBrush(30)">Eraser</button>
+      <button class="btn btn-red" onclick="clearCanvas()" style="padding:8px 16px">Clear</button>
+    </div>
+    <canvas id="canvas" width="720" height="400" style="max-width:100%"></canvas>
+  </section>
+
+  <!-- COUNTER -->
+  <section id="counter">
+    <div class="counter-box">
+      <h2>👆 Click Counter</h2>
+      <div id="click-msg">How fast can you click?</div>
+      <div id="big-number">0</div>
+      <div id="milestone"></div>
+      <div id="speed-display"></div>
+      <div class="btn-grid">
+        <button class="btn btn-pink" id="click-btn" onclick="addClick()">CLICK ME!</button>
+        <button class="btn btn-blue" onclick="resetCounter()">Reset</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="toast">👋 Welcome to Fun Zone!</div>
+
+<script>
+  // ── STARS ──────────────────────────────────────────────
+  const starCanvas = document.getElementById('stars');
+  const sc = starCanvas.getContext('2d');
+  starCanvas.width = window.innerWidth;
+  starCanvas.height = window.innerHeight;
+
+  const stars = Array.from({ length: 150 }, () => ({
+    x: Math.random() * starCanvas.width,
+    y: Math.random() * starCanvas.height,
+    r: Math.random() * 1.5 + 0.3,
+    speed: Math.random() * 0.3 + 0.05,
+    opacity: Math.random()
+  }));
+
+  function drawStars() {
+    sc.clearRect(0, 0, starCanvas.width, starCanvas.height);
+    stars.forEach(s => {
+      s.opacity += (Math.random() - 0.5) * 0.05;
+      s.opacity = Math.max(0.1, Math.min(1, s.opacity));
+      sc.beginPath();
+      sc.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      sc.fillStyle = `rgba(255,255,255,${s.opacity})`;
+      sc.fill();
+    });
+    requestAnimationFrame(drawStars);
+  }
+
+  drawStars();
+  window.addEventListener('resize', () => {
+    starCanvas.width = window.innerWidth;
+    starCanvas.height = window.innerHeight;
+  });
+
+  // ── CURSOR TRAIL ────────────────────────────────────────
+  const trailColors = ['#ff6ec7','#ffdd57','#57f287','#5865f2','#ff4444'];
+  document.addEventListener('mousemove', e => {
+    const dot = document.createElement('div');
+    dot.className = 'trail';
+    dot.style.cssText = `left:${e.clientX - 4}px; top:${e.clientY - 4}px; background:${trailColors[Math.floor(Math.random()*trailColors.length)]}`;
+    document.body.appendChild(dot);
+    setTimeout(() => dot.remove(), 600);
+  });
+
+  // ── SECTIONS ────────────────────────────────────────────
+  function showSection(id, btn) {
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (btn) btn.classList.add('active');
+    if (id === 'quiz') loadQuestion();
+  }
+
+  // ── CONFETTI ────────────────────────────────────────────
+  const colors = ['#ff6ec7','#ffdd57','#57f287','#5865f2','#ff4444','#ff9900','#00cfff'];
+
+  function launchConfetti(mega = false) {
+    const count = mega ? 200 : 60;
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        const p = document.createElement('div');
+        const size = Math.random() * 14 + 6;
+        p.className = 'particle';
+        p.style.cssText = `
+          width:${size}px; height:${size}px;
+          background:${colors[Math.floor(Math.random()*colors.length)]};
+          left:${Math.random()*100}vw; top:-20px;
+          border-radius:${Math.random() > 0.5 ? '50%' : '3px'};
+        `;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 1600);
+      }, i * (mega ? 10 : 20));
+    }
+  }
+
+  // ── EMOJI ───────────────────────────────────────────────
+  const emojis = ['🚀','🎸','🦄','🔥','💥','🎉','🐉','⚡','🍕','🎮','🦊','🌈','💎','🎯','🥳','🐸','🧁','🎵','🏆','🦋'];
+
+  function randomEmoji() {
+    const el = document.getElementById('emoji-display');
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.transform = 'scale(1.6) rotate(15deg)';
+    setTimeout(() => el.style.transform = 'scale(1) rotate(0deg)', 300);
+  }
+
+  // ── SHAKE ───────────────────────────────────────────────
+  function shakePage() {
+    document.body.style.animation = 'none';
+    const style = document.createElement('style');
+    style.textContent = '@keyframes shake{0%,100%{transform:translate(0)}20%{transform:translate(-8px,4px)}40%{transform:translate(8px,-4px)}60%{transform:translate(-5px,5px)}80%{transform:translate(5px,-2px)}}';
+    document.head.appendChild(style);
+    document.body.style.animation = 'shake 0.5s ease';
+    setTimeout(() => { document.body.style.animation = ''; style.remove(); }, 500);
+  }
+
+  // ── INVERT ──────────────────────────────────────────────
+  let inverted = false;
+  function flipColors() {
+    inverted = !inverted;
+    document.body.style.filter = inverted ? 'hue-rotate(180deg)' : '';
+  }
+
+  // ── MOOD ────────────────────────────────────────────────
+  function setMood(msg, card) {
+    document.querySelectorAll('.mood-card').forEach(c => c.style.borderColor = '');
+    if (card) card.style.borderColor = '#ff6ec7';
+    document.getElementById('mood-result').textContent = msg;
+  }
+
+  // ── QUIZ ────────────────────────────────────────────────
+  const questions = [
+    { q: "What does HTML stand for?", opts: ["Hyper Text Markup Language","Hot Text Making Language","High Tech Modern Language","Hyper Transfer Markup Links"], ans: 0 },
+    { q: "Which planet is known as the Red Planet?", opts: ["Earth","Venus","Mars","Jupiter"], ans: 2 },
+    { q: "What is 7 × 8?", opts: ["54","56","64","48"], ans: 1 },
+    { q: "Who invented the telephone?", opts: ["Edison","Tesla","Bell","Marconi"], ans: 2 },
+    { q: "What language runs in a web browser?", opts: ["Python","Java","C++","JavaScript"], ans: 3 },
+    { q: "What does CSS stand for?", opts: ["Colorful Style Sheets","Cascading Style Sheets","Creative Styling Script","Computer Style System"], ans: 1 },
+    { q: "How many sides does a hexagon have?", opts: ["5","7","6","8"], ans: 2 },
+    { q: "What is the speed of light (approx)?", opts: ["300,000 km/s","150,000 km/s","500,000 km/s","1,000,000 km/s"], ans: 0 },
+  ];
+
+  let qIndex = 0, score = 0, total = 0, answered = false;
+
+  function loadQuestion() {
+    answered = false;
+    const q = questions[qIndex % questions.length];
+    document.getElementById('quiz-question').textContent = `Q${total + 1}: ${q.q}`;
+    document.getElementById('quiz-feedback').textContent = '';
+    const opts = document.getElementById('quiz-options');
+    opts.innerHTML = '';
+    q.opts.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-opt';
+      btn.textContent = opt;
+      btn.onclick = () => checkAnswer(i, q.ans);
+      opts.appendChild(btn);
+    });
+    updateScore();
+  }
+
+  function checkAnswer(chosen, correct) {
+    if (answered) return;
+    answered = true;
+    total++;
+    const btns = document.querySelectorAll('.quiz-opt');
+    btns[chosen].classList.add(chosen === correct ? 'correct' : 'wrong');
+    btns[correct].classList.add('correct');
+    if (chosen === correct) { score++; launchConfetti(); }
+    document.getElementById('quiz-feedback').textContent = chosen === correct ? '✅ Correct!' : `❌ Wrong! It was: ${questions[qIndex % questions.length].opts[correct]}`;
+    updateScore();
+  }
+
+  function nextQuestion() {
+    qIndex++;
+    loadQuestion();
+  }
+
+  function updateScore() {
+    document.getElementById('quiz-score').textContent = `Score: ${score} / ${total}`;
+  }
+
+  // ── DRAW ────────────────────────────────────────────────
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  let drawing = false, brushColor = '#ff6ec7', brushSize = 6;
+
+  function setColor(c, dot) {
+    brushColor = c;
+    document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+    if (dot) dot.classList.add('selected');
+  }
+
+  function setBrush(s) { brushSize = s; }
+  function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+  function getPos(e) {
+    const r = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / r.width;
+    const scaleY = canvas.height / r.height;
+    const src = e.touches ? e.touches[0] : e;
+    return { x: (src.clientX - r.left) * scaleX, y: (src.clientY - r.top) * scaleY };
+  }
+
+  canvas.addEventListener('mousedown',  e => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+  canvas.addEventListener('mousemove',  e => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = brushColor; ctx.lineWidth = brushSize; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); });
+  canvas.addEventListener('mouseup',    () => drawing = false);
+  canvas.addEventListener('mouseleave', () => drawing = false);
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+  canvas.addEventListener('touchmove',  e => { e.preventDefault(); if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = brushColor; ctx.lineWidth = brushSize; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); });
+  canvas.addEventListener('touchend',   () => drawing = false);
+
+  // ── COUNTER ─────────────────────────────────────────────
+  let count = 0, clickTimes = [];
+
+  const milestones = {
+    10:  '🎉 10 clicks! Warming up!',
+    25:  '⚡ 25 clicks! You\'re rolling!',
+    50:  '🔥 50 clicks! ON FIRE!',
+    100: '💥 100 clicks! LEGENDARY!',
+    200: '🦄 200 clicks! ARE YOU EVEN HUMAN?!',
+    500: '👾 500... okay you need to touch grass'
+  };
+
+  function addClick() {
+    count++;
+    const el = document.getElementById('big-number');
+    el.textContent = count;
+    el.classList.add('pop');
+    setTimeout(() => el.classList.remove('pop'), 100);
+
+    if (milestones[count]) {
+      document.getElementById('milestone').textContent = milestones[count];
+      launchConfetti();
     }
 
-    function toggleBg() {
-      bgIndex = (bgIndex + 1) % bgs.length;
-      document.body.style.background = bgs[bgIndex];
-    }
+    clickTimes.push(Date.now());
+    clickTimes = clickTimes.filter(t => Date.now() - t < 1000);
+    document.getElementById('speed-display').textContent = `Speed: ${clickTimes.length} clicks/sec`;
+  }
 
-    function launchConfetti() {
-      const colors = ['#ff6ec7','#ffdd57','#57f287','#5865f2','#ff4444'];
-      for (let i = 0; i < 60; i++) {
-        setTimeout(() => {
-          const p = document.createElement('div');
-          p.className = 'particle';
-          p.style.cssText = `
-            width: ${Math.random() * 12 + 6}px;
-            height: ${Math.random() * 12 + 6}px;
-            background: ${colors[Math.floor(Math.random() * colors.length)]};
-            left: ${Math.random() * 100}vw;
-            top: -20px;
-          `;
-          document.body.appendChild(p);
-          setTimeout(() => p.remove(), 1600);
-        }, i * 20);
-      }
-    }
-  </script>
+  function resetCounter() {
+    count = 0;
+    clickTimes = [];
+    document.getElementById('big-number').textContent = '0';
+    document.getElementById('milestone').textContent = '';
+    document.getElementById('speed-display').textContent = '';
+  }
+
+  // ── TOAST ───────────────────────────────────────────────
+  const toast = document.getElementById('toast');
+  setTimeout(() => { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }, 500);
+
+  loadQuestion();
+</script>
 
 </body>
 </html>
