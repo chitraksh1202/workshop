@@ -3,652 +3,619 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fun Zone 🎮</title>
+  <title>Git Workshop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles-slim@2.12.0/tsparticles.slim.bundle.min.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --bg: #0f0f1a;
-      --card: #1a1a2e;
-      --accent: #ff6ec7;
+      --bg:        #0a0a0f;
+      --surface:   #111118;
+      --surface2:  #16161f;
+      --border:    rgba(255,255,255,0.07);
+      --border2:   rgba(255,255,255,0.13);
+      --primary:   oklch(0.85 0.15 55);   /* golden amber — from the theme */
+      --primary-lo: oklch(0.85 0.15 55 / 0.10);
+      --primary-glow: oklch(0.85 0.15 55 / 0.06);
+      --accent:    #6c63ff;
+      --accent-lo: rgba(108,99,255,0.10);
+      --green:     #34d399;
+      --green-lo:  rgba(52,211,153,0.10);
+      --text:      #e4e4f0;
+      --text2:     #7878a0;
+      --muted:     #2e2e44;
     }
 
     body {
-      min-height: 100vh;
       background: var(--bg);
-      color: white;
-      font-family: 'Segoe UI', sans-serif;
-      overflow-x: hidden;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
     }
 
-    /* STARS BACKGROUND */
-    #stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(oklch(0.85 0.15 55 / 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, oklch(0.85 0.15 55 / 0.025) 1px, transparent 1px);
+      background-size: 52px 52px;
+      pointer-events: none;
+    }
 
-    .content { position: relative; z-index: 1; }
-
-    /* NAV */
+    /* ── NAV ── */
     nav {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      padding: 20px;
-      background: rgba(255,255,255,0.05);
-      backdrop-filter: blur(10px);
       position: sticky;
       top: 0;
-      z-index: 10;
-      flex-wrap: wrap;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 60px;
+      background: rgba(10,10,15,0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
     }
 
-    nav button {
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.2);
-      color: white;
-      padding: 8px 20px;
-      border-radius: 50px;
+    .nav-logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: default;
+      user-select: none;
+    }
+
+    .nav-logo .scramble-primary { color: var(--primary); }
+
+    .nav-links { display: flex; gap: 8px; }
+
+    .nav-link {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text2);
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .nav-link:hover { background: var(--surface2); color: var(--text); }
+
+    .nav-link.cta {
+      background: var(--primary);
+      color: #0a0a0f;
+      font-weight: 700;
+    }
+
+    .nav-link.cta:hover { filter: brightness(1.1); color: #0a0a0f; }
+
+    /* ── TEXT SCRAMBLE COMPONENT ── */
+    .scramble-wrap {
+      position: relative;
+      display: inline-flex;
+      flex-direction: column;
       cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.2s;
+      user-select: none;
     }
 
-    nav button:hover, nav button.active {
-      background: var(--accent);
-      border-color: var(--accent);
+    .scramble-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(11px, 1.4vw, 14px);
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      white-space: nowrap;
     }
 
-    /* SECTIONS */
-    section {
-      display: none;
-      padding: 40px 20px;
-      max-width: 800px;
-      margin: 0 auto;
-      animation: fadeIn 0.4s ease;
+    .scramble-char {
+      display: inline-block;
+      transition: color 0.15s, transform 0.15s;
     }
 
-    section.active { display: block; }
+    .scramble-char.scrambling {
+      color: var(--primary);
+      transform: scaleY(1.1);
+    }
 
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    /* animated underline */
+    .scramble-underline {
+      position: relative;
+      height: 1px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
 
-    h1 {
-      font-size: 2.8rem;
+    .scramble-underline::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--border2);
+    }
+
+    .scramble-underline::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--text);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.5s cubic-bezier(0.22,1,0.36,1);
+    }
+
+    .scramble-wrap:hover .scramble-underline::after { transform: scaleX(1); }
+
+    /* glow */
+    .scramble-glow {
+      position: absolute;
+      inset: -16px;
+      border-radius: 10px;
+      background: var(--primary-glow);
+      opacity: 0;
+      z-index: -1;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .scramble-wrap:hover .scramble-glow { opacity: 1; }
+
+    /* ── SPARKLES ── */
+    .sparkles-wrapper {
+      position: relative;
+      width: min(640px, 90vw);
+      height: 140px;
+      margin: -8px auto 0;
+      overflow: hidden;
+    }
+
+    /* gradient lines (indigo + sky, like the demo) */
+    .sp-line {
+      position: absolute;
+      top: 0;
+      height: 2px;
+      border-radius: 99px;
+    }
+    .sp-line-1 {
+      left: 15%; right: 15%;
+      background: linear-gradient(to right, transparent, #e8b84b, transparent);
+      filter: blur(1px);
+    }
+    .sp-line-2 {
+      left: 15%; right: 15%;
+      background: linear-gradient(to right, transparent, #e8b84b, transparent);
+      height: 1px;
+    }
+    .sp-line-3 {
+      left: 38%; right: 38%;
+      background: linear-gradient(to right, transparent, #60a5fa, transparent);
+      height: 5px;
+      filter: blur(2px);
+    }
+    .sp-line-4 {
+      left: 38%; right: 38%;
+      background: linear-gradient(to right, transparent, #60a5fa, transparent);
+      height: 1px;
+    }
+
+    #sparkles-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* radial mask: transparent at top (shows particles), fades to bg at edges/bottom */
+    .sparkles-mask {
+      position: absolute;
+      inset: 0;
+      background: var(--bg);
+      -webkit-mask-image: radial-gradient(ellipse 70% 80% at top, transparent 20%, black 80%);
+      mask-image: radial-gradient(ellipse 70% 80% at top, transparent 20%, black 80%);
+      pointer-events: none;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
       text-align: center;
-      background: linear-gradient(90deg, #ff6ec7, #ffdd57, #57f287, #5865f2, #ff6ec7);
-      background-size: 400%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: rainbow 4s linear infinite;
+      padding: 80px 24px 80px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--text2);
+      margin-bottom: 28px;
+    }
+
+    /* big scramble title */
+    .hero-big-scramble {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 36px;
+    }
+
+    .hero-big-scramble .scramble-text {
+      font-size: clamp(32px, 7vw, 72px);
+      letter-spacing: 0.18em;
+      color: var(--text);
+    }
+
+    .hero-big-scramble .scramble-char.scrambling {
+      color: var(--primary);
+      transform: scaleY(1.15);
+    }
+
+    .hero-sub {
+      font-size: 16px;
+      color: var(--text2);
+      line-height: 1.7;
+      max-width: 500px;
+      margin: 0 auto 48px;
+    }
+
+    /* scramble CTAs in hero */
+    .hero-scrambles {
+      display: flex;
+      gap: 48px;
+      justify-content: center;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+
+    .hero-scrambles .scramble-text {
+      font-size: clamp(12px, 1.6vw, 14px);
+      color: var(--text);
+    }
+
+    .hero-scrambles a { text-decoration: none; color: inherit; }
+
+    .hero-scrambles .scramble-wrap.muted .scramble-text { color: var(--text2); }
+
+    /* ── SECTION ── */
+    .section {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 64px 24px;
+    }
+
+    .section-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .section-sub {
+      font-size: 14px;
+      color: var(--text2);
+      margin-bottom: 36px;
+    }
+
+    /* ── CONCEPTS ── */
+    .concepts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: 12px;
+    }
+
+    .concept-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 18px;
+      transition: border-color 0.15s, background 0.15s;
+      cursor: default;
+    }
+
+    .concept-card:hover {
+      border-color: oklch(0.85 0.15 55 / 0.25);
+      background: var(--surface2);
+    }
+
+    .concept-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 1px;
       margin-bottom: 10px;
     }
 
-    @keyframes rainbow { 0% { background-position: 0%; } 100% { background-position: 400%; } }
-
-    h2 { font-size: 1.6rem; margin-bottom: 20px; text-align: center; color: #ccc; }
-
-    /* HERO */
-    .hero {
-      text-align: center;
-      padding: 60px 20px;
+    .concept-name {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 8px;
     }
 
-    .hero p { color: #aaa; font-size: 1.1rem; margin: 10px 0 30px; }
+    .concept-cmd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--green);
+      background: var(--green-lo);
+      padding: 3px 8px;
+      border-radius: 5px;
+      display: inline-block;
+    }
 
-    .btn-grid {
+    /* ── PROJECTS ── */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .project-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 20px;
+      text-decoration: none;
+      color: inherit;
       display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-
-    .btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 50px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.2s;
-      font-weight: bold;
-    }
-
-    .btn:hover { transform: scale(1.08); box-shadow: 0 0 20px rgba(255,110,199,0.5); }
-    .btn:active { transform: scale(0.95); }
-    .btn-pink   { background: #ff6ec7; color: #fff; }
-    .btn-yellow { background: #ffdd57; color: #333; }
-    .btn-green  { background: #57f287; color: #333; }
-    .btn-blue   { background: #5865f2; color: #fff; }
-    .btn-red    { background: #ff4444; color: #fff; }
-
-    #emoji-display { font-size: 5rem; text-align: center; margin: 20px 0; transition: transform 0.2s; }
-
-    .gojo-container {
-      display: flex;
-      justify-content: center;
-      margin: 30px 0 10px;
-    }
-
-    .gojo-img {
-      width: 220px;
-      height: 220px;
-      object-fit: cover;
-      border-radius: 50%;
-      border: 4px solid #5865f2;
-      box-shadow: 0 0 30px rgba(88,101,242,0.7), 0 0 60px rgba(255,110,199,0.3);
-      animation: gojoPulse 3s ease-in-out infinite;
-      transition: transform 0.3s;
-    }
-
-    .gojo-img:hover {
-      transform: scale(1.08) rotate(3deg);
-      box-shadow: 0 0 50px rgba(88,101,242,1), 0 0 80px rgba(255,110,199,0.6);
-    }
-
-    .gojo-label {
-      text-align: center;
-      font-size: 1rem;
-      color: #aaa;
-      margin-top: 8px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-
-    @keyframes gojoPulse {
-      0%, 100% { box-shadow: 0 0 30px rgba(88,101,242,0.7), 0 0 60px rgba(255,110,199,0.3); }
-      50%       { box-shadow: 0 0 50px rgba(88,101,242,1),   0 0 90px rgba(255,110,199,0.6); }
-    }
-
-    /* MOOD TRACKER */
-    .mood-grid { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
-
-    .mood-card {
-      background: var(--card);
-      border: 2px solid transparent;
-      border-radius: 16px;
-      padding: 20px;
-      font-size: 2.5rem;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.2s;
-      min-width: 100px;
-    }
-
-    .mood-card:hover { border-color: var(--accent); transform: scale(1.1); }
-    .mood-card span { display: block; font-size: 0.8rem; color: #aaa; margin-top: 5px; }
-    #mood-result { text-align: center; font-size: 1.2rem; margin-top: 20px; min-height: 40px; color: #ffdd57; }
-
-    /* QUIZ */
-    .quiz-box {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 30px;
-    }
-
-    #quiz-question { font-size: 1.3rem; margin-bottom: 20px; line-height: 1.5; }
-
-    .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-    .quiz-opt {
-      background: rgba(255,255,255,0.07);
-      border: 2px solid rgba(255,255,255,0.1);
-      color: white;
-      padding: 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: all 0.2s;
-      text-align: left;
-    }
-
-    .quiz-opt:hover { border-color: #5865f2; background: rgba(88,101,242,0.2); }
-    .quiz-opt.correct { border-color: #57f287; background: rgba(87,242,135,0.2); }
-    .quiz-opt.wrong   { border-color: #ff4444; background: rgba(255,68,68,0.2); }
-
-    #quiz-feedback { text-align: center; margin-top: 15px; font-size: 1.1rem; min-height: 30px; }
-    #quiz-score    { text-align: center; font-size: 1rem; color: #aaa; margin-bottom: 15px; }
-
-    /* DRAW PAD */
-    #canvas {
-      display: block;
-      margin: 0 auto;
-      border-radius: 12px;
-      cursor: crosshair;
-      touch-action: none;
-      background: #1a1a2e;
-      border: 2px solid rgba(255,255,255,0.1);
-    }
-
-    .draw-controls {
-      display: flex;
+      flex-direction: column;
       gap: 10px;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      margin: 15px 0;
+      transition: border-color 0.15s, background 0.15s, transform 0.15s;
     }
 
-    .color-dot {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 3px solid transparent;
-      transition: transform 0.2s;
+    .project-card:hover {
+      border-color: oklch(0.85 0.15 55 / 0.25);
+      background: var(--surface2);
+      transform: translateY(-2px);
     }
 
-    .color-dot:hover, .color-dot.selected { transform: scale(1.3); border-color: white; }
+    .proj-icon { font-size: 28px; line-height: 1; }
 
-    .size-btn {
-      background: rgba(255,255,255,0.1);
-      border: none;
-      color: white;
-      padding: 8px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.9rem;
+    .proj-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
     }
 
-    .size-btn:hover { background: rgba(255,255,255,0.2); }
+    .proj-desc { font-size: 13px; color: var(--text2); line-height: 1.5; flex: 1; }
 
-    /* COUNTER GAME */
-    .counter-box { text-align: center; }
-    #big-number {
-      font-size: 8rem;
-      font-weight: bold;
-      color: var(--accent);
-      line-height: 1;
-      margin: 20px 0;
-      text-shadow: 0 0 40px rgba(255,110,199,0.6);
-      transition: transform 0.1s;
+    .proj-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 3px 10px;
+      border-radius: 99px;
+      display: inline-block;
+      width: fit-content;
     }
 
-    #big-number.pop { transform: scale(1.2); }
-    #click-msg { font-size: 1rem; color: #aaa; margin-bottom: 20px; }
-    #milestone { font-size: 1.3rem; color: #ffdd57; min-height: 30px; margin: 10px 0; }
-    #speed-display { font-size: 0.9rem; color: #888; }
+    .tag-purple { background: rgba(168,85,247,0.12); color: #a855f7; border: 1px solid rgba(168,85,247,0.2); }
+    .tag-blue   { background: rgba(59,130,246,0.12);  color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
 
-    /* PARTICLES */
-    .particle {
-      position: fixed;
-      pointer-events: none;
-      border-radius: 50%;
-      animation: fall 1.5s ease-out forwards;
-      z-index: 999;
+    /* ── DIVIDER ── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 0 24px; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--text2);
     }
 
-    @keyframes fall {
-      0%   { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
-      100% { opacity: 0; transform: translateY(500px) rotate(720deg) scale(0); }
-    }
-
-    /* SCROLL TOAST */
-    #toast {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: rgba(30,30,50,0.95);
-      border: 1px solid rgba(255,255,255,0.15);
-      padding: 12px 24px;
-      border-radius: 50px;
-      font-size: 0.95rem;
-      transition: transform 0.4s ease;
-      z-index: 100;
-      backdrop-filter: blur(10px);
-    }
-
-    #toast.show { transform: translateX(-50%) translateY(0); }
-
-    /* CURSOR TRAIL */
-    .trail {
-      position: fixed;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      pointer-events: none;
-      animation: trailFade 0.6s ease-out forwards;
-      z-index: 9999;
-    }
-
-    @keyframes trailFade {
-      0%   { opacity: 0.8; transform: scale(1); }
-      100% { opacity: 0; transform: scale(0); }
-    }
+    footer a { color: var(--primary); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
 
-<canvas id="stars"></canvas>
-
-<div class="content">
   <nav>
-    <button class="active" onclick="showSection('home', this)">🏠 Home</button>
-    <button onclick="showSection('mood', this)">😊 Mood</button>
-    <button onclick="showSection('quiz', this)">🧠 Quiz</button>
-    <button onclick="showSection('draw', this)">🎨 Draw</button>
-    <button onclick="showSection('counter', this)">👆 Clicker</button>
+    <div class="nav-logo">
+      GIT<span class="scramble-primary">WORKSHOP</span>
+    </div>
+    <div class="nav-links">
+      <a href="#concepts" class="nav-link">Concepts</a>
+      <a href="#projects" class="nav-link">Projects</a>
+      <a href="https://github.com/chitraksh1202/workshop" target="_blank" class="nav-link cta">GitHub</a>
+    </div>
   </nav>
 
-  <!-- HOME -->
-  <section id="home" class="active">
-    <div class="hero">
-      <h1>Fun Zone 🎮</h1>
-      <p>Confetti · Emojis · Mood · Quiz · Drawing · Clicking</p>
-      <div class="btn-grid">
-        <button class="btn btn-pink" onclick="launchConfetti()">🎉 Confetti!</button>
-        <button class="btn btn-yellow" onclick="randomEmoji()">😎 Random Emoji</button>
-        <button class="btn btn-blue" onclick="shakePage()">📳 Shake!</button>
-        <button class="btn btn-green" onclick="flipColors()">🌈 Invert</button>
-        <button class="btn btn-red" onclick="launchConfetti(true)">💥 MEGA Blast</button>
-      </div>
-      <div id="emoji-display">🚀</div>
-      <div class="gojo-container">
-        <img class="gojo-img" src="https://imgs.search.brave.com/ptpJDxhXrvbExFeeXfYk5K7vthcCCrGtif5WGdXqAKc/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzIxL2Q1/L2M5LzIxZDVjOWZk/ODBhNjE3YjExZTYw/M2M2ZWRjOWNmMWEz/LmpwZw" alt="Gojo Satoru" />
-      </div>
-      <p class="gojo-label">Gojo Satoru</p>
-    </div>
-  </section>
+  <div class="hero">
+    <p class="hero-eyebrow">Hover to decode</p>
 
-  <!-- MOOD -->
-  <section id="mood">
-    <h2>How are you feeling today?</h2>
-    <div class="mood-grid">
-      <div class="mood-card" onclick="setMood('Amazing! You must be on fire today 🔥', this)">🤩<span>Amazing</span></div>
-      <div class="mood-card" onclick="setMood('Happy vibes! Keep smiling 😄', this)">😊<span>Happy</span></div>
-      <div class="mood-card" onclick="setMood('Meh... maybe some confetti will help?', this)">😐<span>Meh</span></div>
-      <div class="mood-card" onclick="setMood('Tired? Go drink some water 💧', this)">😴<span>Tired</span></div>
-      <div class="mood-card" onclick="setMood('Stressed? Take a deep breath. You got this 💪', this)">😤<span>Stressed</span></div>
-      <div class="mood-card" onclick="setMood('Silly mode activated 🤪 Embrace it!', this)">🤪<span>Silly</span></div>
-    </div>
-    <div id="mood-result"></div>
-    <div class="btn-grid" style="margin-top:20px">
-      <button class="btn btn-pink" onclick="launchConfetti(); setMood('Confetti makes everything better! 🎉', null)">Cheer me up!</button>
-    </div>
-  </section>
-
-  <!-- QUIZ -->
-  <section id="quiz">
-    <h2>🧠 Fun Quiz</h2>
-    <div id="quiz-score">Score: 0 / 0</div>
-    <div class="quiz-box">
-      <div id="quiz-question">Loading question...</div>
-      <div class="quiz-options" id="quiz-options"></div>
-      <div id="quiz-feedback"></div>
-    </div>
-    <div class="btn-grid" style="margin-top:20px">
-      <button class="btn btn-blue" onclick="nextQuestion()">Next Question ➡️</button>
-    </div>
-  </section>
-
-  <!-- DRAW -->
-  <section id="draw">
-    <h2>🎨 Draw Anything!</h2>
-    <div class="draw-controls">
-      <div class="color-dot selected" style="background:#ff6ec7" onclick="setColor('#ff6ec7', this)"></div>
-      <div class="color-dot" style="background:#ffdd57" onclick="setColor('#ffdd57', this)"></div>
-      <div class="color-dot" style="background:#57f287" onclick="setColor('#57f287', this)"></div>
-      <div class="color-dot" style="background:#5865f2" onclick="setColor('#5865f2', this)"></div>
-      <div class="color-dot" style="background:#ffffff" onclick="setColor('#ffffff', this)"></div>
-      <div class="color-dot" style="background:#ff4444" onclick="setColor('#ff4444', this)"></div>
-      <button class="size-btn" onclick="setBrush(4)">S</button>
-      <button class="size-btn" onclick="setBrush(10)">M</button>
-      <button class="size-btn" onclick="setBrush(22)">L</button>
-      <button class="size-btn" onclick="setColor('#0f0f1a'); setBrush(30)">Eraser</button>
-      <button class="btn btn-red" onclick="clearCanvas()" style="padding:8px 16px">Clear</button>
-    </div>
-    <canvas id="canvas" width="720" height="400" style="max-width:100%"></canvas>
-  </section>
-
-  <!-- COUNTER -->
-  <section id="counter">
-    <div class="counter-box">
-      <h2>👆 Click Counter</h2>
-      <div id="click-msg">How fast can you click?</div>
-      <div id="big-number">0</div>
-      <div id="milestone"></div>
-      <div id="speed-display"></div>
-      <div class="btn-grid">
-        <button class="btn btn-pink" id="click-btn" onclick="addClick()">CLICK ME!</button>
-        <button class="btn btn-blue" onclick="resetCounter()">Reset</button>
+    <!-- big scramble display word -->
+    <div class="hero-big-scramble">
+      <div class="scramble-wrap" data-scramble="GIT-WORKSHOP">
+        <span class="scramble-text">GIT-WORKSHOP</span>
+        <span class="scramble-underline"></span>
+        <span class="scramble-glow"></span>
       </div>
     </div>
+
+    <!-- sparkles strip (below GITWORKSHOP, above subtitle) -->
+    <div class="sparkles-wrapper">
+      <div class="sp-line sp-line-1"></div>
+      <div class="sp-line sp-line-2"></div>
+      <div class="sp-line sp-line-3"></div>
+      <div class="sp-line sp-line-4"></div>
+      <div id="sparkles-canvas"></div>
+      <div class="sparkles-mask"></div>
+    </div>
+
+    <p class="hero-sub">
+      A practical workshop covering the 9 core Git concepts — from your first commit to merging branches — all while shipping real projects.
+    </p>
+
+    <div class="hero-scrambles">
+      <a href="#concepts">
+        <div class="scramble-wrap" data-scramble="VIEW CONCEPTS">
+          <span class="scramble-text">VIEW CONCEPTS</span>
+          <span class="scramble-underline"></span>
+          <span class="scramble-glow"></span>
+        </div>
+      </a>
+      <a href="game.html">
+        <div class="scramble-wrap muted" data-scramble="PLAY GAMES">
+          <span class="scramble-text">PLAY GAMES</span>
+          <span class="scramble-underline"></span>
+          <span class="scramble-glow"></span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <section class="section" id="concepts">
+    <div class="section-eyebrow">Workshop Curriculum</div>
+    <div class="section-title">9 Git Concepts</div>
+    <div class="section-sub">Everything you need to collaborate with version control.</div>
+
+    <div class="concepts-grid">
+      <div class="concept-card"><div class="concept-num">01</div><div class="concept-name">Repository</div><div class="concept-cmd">git init</div></div>
+      <div class="concept-card"><div class="concept-num">02</div><div class="concept-name">Clone</div><div class="concept-cmd">git clone</div></div>
+      <div class="concept-card"><div class="concept-num">03</div><div class="concept-name">Add</div><div class="concept-cmd">git add</div></div>
+      <div class="concept-card"><div class="concept-num">04</div><div class="concept-name">Status</div><div class="concept-cmd">git status</div></div>
+      <div class="concept-card"><div class="concept-num">05</div><div class="concept-name">Commit</div><div class="concept-cmd">git commit</div></div>
+      <div class="concept-card"><div class="concept-num">06</div><div class="concept-name">Pull</div><div class="concept-cmd">git pull</div></div>
+      <div class="concept-card"><div class="concept-num">07</div><div class="concept-name">Push</div><div class="concept-cmd">git push</div></div>
+      <div class="concept-card"><div class="concept-num">08</div><div class="concept-name">Branch</div><div class="concept-cmd">git branch</div></div>
+      <div class="concept-card"><div class="concept-num">09</div><div class="concept-name">Merge</div><div class="concept-cmd">git merge</div></div>
+    </div>
   </section>
-</div>
 
-<div id="toast">👋 Welcome to Fun Zone!</div>
+  <hr class="divider">
 
-<script>
-  // ── STARS ──────────────────────────────────────────────
-  const starCanvas = document.getElementById('stars');
-  const sc = starCanvas.getContext('2d');
-  starCanvas.width = window.innerWidth;
-  starCanvas.height = window.innerHeight;
+  <section class="section" id="projects">
+    <div class="section-eyebrow">Projects Built</div>
+    <div class="section-title">What we shipped</div>
+    <div class="section-sub">Real projects committed and pushed to GitHub during the workshop.</div>
 
-  const stars = Array.from({ length: 150 }, () => ({
-    x: Math.random() * starCanvas.width,
-    y: Math.random() * starCanvas.height,
-    r: Math.random() * 1.5 + 0.3,
-    speed: Math.random() * 0.3 + 0.05,
-    opacity: Math.random()
-  }));
+    <div class="projects-grid">
+      <a href="game.html" class="project-card">
+        <div class="proj-icon">🎮</div>
+        <div class="proj-name">Game Hub</div>
+        <div class="proj-desc">Pong, Snake Battle, Bomberman, and AniGuess — all playable in the browser.</div>
+        <span class="proj-tag tag-blue">Multiplayer + Solo</span>
+      </a>
+      <a href="aniguess.html" class="project-card">
+        <div class="proj-icon">🎌</div>
+        <div class="proj-name">AniGuess</div>
+        <div class="proj-desc">Wordle-style anime guessing game with 250+ titles, daily mode, and stats.</div>
+        <span class="proj-tag tag-purple">Daily Puzzle</span>
+      </a>
+    </div>
+  </section>
 
-  function drawStars() {
-    sc.clearRect(0, 0, starCanvas.width, starCanvas.height);
-    stars.forEach(s => {
-      s.opacity += (Math.random() - 0.5) * 0.05;
-      s.opacity = Math.max(0.1, Math.min(1, s.opacity));
-      sc.beginPath();
-      sc.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      sc.fillStyle = `rgba(255,255,255,${s.opacity})`;
-      sc.fill();
+  <hr class="divider">
+
+  <footer>
+    [ kinetic typography ] &nbsp;&mdash;&nbsp;
+    Built by <a href="https://github.com/chitraksh1202/workshop" target="_blank">chitraksh1202</a>
+  </footer>
+
+  <script>
+    const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*";
+
+    class TextScramble {
+      constructor(el) {
+        this.el = el;
+        this.textEl = el.querySelector('.scramble-text');
+        this.original = el.dataset.scramble;
+        this.intervalId = null;
+        this.frame = 0;
+
+        el.addEventListener('mouseenter', () => this.scramble());
+      }
+
+      scramble() {
+        clearInterval(this.intervalId);
+        this.frame = 0;
+        const duration = this.original.length * 3;
+
+        this.intervalId = setInterval(() => {
+          this.frame++;
+          const progress = this.frame / duration;
+          const revealed = Math.floor(progress * this.original.length);
+
+          const html = this.original.split('').map((char, i) => {
+            if (char === ' ') return '<span class="scramble-char"> </span>';
+            const isScrambling = i >= revealed;
+            const display = isScrambling
+              ? CHARS[Math.floor(Math.random() * CHARS.length)]
+              : char;
+            return `<span class="scramble-char${isScrambling ? ' scrambling' : ''}">${display}</span>`;
+          }).join('');
+
+          this.textEl.innerHTML = html;
+
+          if (this.frame >= duration) {
+            clearInterval(this.intervalId);
+            this.textEl.innerHTML = this.original.split('').map(c =>
+              `<span class="scramble-char">${c}</span>`
+            ).join('');
+          }
+        }, 30);
+      }
+    }
+
+    // ── SPARKLES (tsParticles) ──
+    tsParticles.load("sparkles-canvas", {
+      background: { color: { value: "transparent" } },
+      fullScreen: { enable: false, zIndex: 1 },
+      fpsLimit: 120,
+      particles: {
+        number: {
+          value: 120,
+          density: { enable: true, width: 640, height: 140 }
+        },
+        color: { value: "#ffffff" },
+        opacity: {
+          value: { min: 0.1, max: 1 },
+          animation: { enable: true, speed: 4, sync: false }
+        },
+        size: { value: { min: 0.4, max: 1.4 } },
+        move: {
+          enable: true,
+          speed: { min: 0.1, max: 1 },
+          direction: "none",
+          outModes: { default: "out" }
+        },
+        shape: { type: "circle" }
+      },
+      detectRetina: true
     });
-    requestAnimationFrame(drawStars);
-  }
 
-  drawStars();
-  window.addEventListener('resize', () => {
-    starCanvas.width = window.innerWidth;
-    starCanvas.height = window.innerHeight;
-  });
+    const instances = [];
+    document.querySelectorAll('[data-scramble]').forEach(el => {
+      instances.push(new TextScramble(el));
+    });
 
-  // ── CURSOR TRAIL ────────────────────────────────────────
-  const trailColors = ['#ff6ec7','#ffdd57','#57f287','#5865f2','#ff4444'];
-  document.addEventListener('mousemove', e => {
-    const dot = document.createElement('div');
-    dot.className = 'trail';
-    dot.style.cssText = `left:${e.clientX - 4}px; top:${e.clientY - 4}px; background:${trailColors[Math.floor(Math.random()*trailColors.length)]}`;
-    document.body.appendChild(dot);
-    setTimeout(() => dot.remove(), 600);
-  });
-
-  // ── SECTIONS ────────────────────────────────────────────
-  function showSection(id, btn) {
-    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    if (btn) btn.classList.add('active');
-    if (id === 'quiz') loadQuestion();
-  }
-
-  // ── CONFETTI ────────────────────────────────────────────
-  const colors = ['#ff6ec7','#ffdd57','#57f287','#5865f2','#ff4444','#ff9900','#00cfff'];
-
-  function launchConfetti(mega = false) {
-    const count = mega ? 200 : 60;
-    for (let i = 0; i < count; i++) {
+    // auto-fire the big hero title on page load
+    const bigTitle = document.querySelector('.hero-big-scramble [data-scramble]');
+    if (bigTitle) {
       setTimeout(() => {
-        const p = document.createElement('div');
-        const size = Math.random() * 14 + 6;
-        p.className = 'particle';
-        p.style.cssText = `
-          width:${size}px; height:${size}px;
-          background:${colors[Math.floor(Math.random()*colors.length)]};
-          left:${Math.random()*100}vw; top:-20px;
-          border-radius:${Math.random() > 0.5 ? '50%' : '3px'};
-        `;
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), 1600);
-      }, i * (mega ? 10 : 20));
+        const inst = instances.find(i => i.el === bigTitle);
+        if (inst) inst.scramble();
+      }, 300);
     }
-  }
-
-  // ── EMOJI ───────────────────────────────────────────────
-  const emojis = ['🚀','🎸','🦄','🔥','💥','🎉','🐉','⚡','🍕','🎮','🦊','🌈','💎','🎯','🥳','🐸','🧁','🎵','🏆','🦋'];
-
-  function randomEmoji() {
-    const el = document.getElementById('emoji-display');
-    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-    el.style.transform = 'scale(1.6) rotate(15deg)';
-    setTimeout(() => el.style.transform = 'scale(1) rotate(0deg)', 300);
-  }
-
-  // ── SHAKE ───────────────────────────────────────────────
-  function shakePage() {
-    document.body.style.animation = 'none';
-    const style = document.createElement('style');
-    style.textContent = '@keyframes shake{0%,100%{transform:translate(0)}20%{transform:translate(-8px,4px)}40%{transform:translate(8px,-4px)}60%{transform:translate(-5px,5px)}80%{transform:translate(5px,-2px)}}';
-    document.head.appendChild(style);
-    document.body.style.animation = 'shake 0.5s ease';
-    setTimeout(() => { document.body.style.animation = ''; style.remove(); }, 500);
-  }
-
-  // ── INVERT ──────────────────────────────────────────────
-  let inverted = false;
-  function flipColors() {
-    inverted = !inverted;
-    document.body.style.filter = inverted ? 'hue-rotate(180deg)' : '';
-  }
-
-  // ── MOOD ────────────────────────────────────────────────
-  function setMood(msg, card) {
-    document.querySelectorAll('.mood-card').forEach(c => c.style.borderColor = '');
-    if (card) card.style.borderColor = '#ff6ec7';
-    document.getElementById('mood-result').textContent = msg;
-  }
-
-  // ── QUIZ ────────────────────────────────────────────────
-  const questions = [
-    { q: "What does HTML stand for?", opts: ["Hyper Text Markup Language","Hot Text Making Language","High Tech Modern Language","Hyper Transfer Markup Links"], ans: 0 },
-    { q: "Which planet is known as the Red Planet?", opts: ["Earth","Venus","Mars","Jupiter"], ans: 2 },
-    { q: "What is 7 × 8?", opts: ["54","56","64","48"], ans: 1 },
-    { q: "Who invented the telephone?", opts: ["Edison","Tesla","Bell","Marconi"], ans: 2 },
-    { q: "What language runs in a web browser?", opts: ["Python","Java","C++","JavaScript"], ans: 3 },
-    { q: "What does CSS stand for?", opts: ["Colorful Style Sheets","Cascading Style Sheets","Creative Styling Script","Computer Style System"], ans: 1 },
-    { q: "How many sides does a hexagon have?", opts: ["5","7","6","8"], ans: 2 },
-    { q: "What is the speed of light (approx)?", opts: ["300,000 km/s","150,000 km/s","500,000 km/s","1,000,000 km/s"], ans: 0 },
-  ];
-
-  let qIndex = 0, score = 0, total = 0, answered = false;
-
-  function loadQuestion() {
-    answered = false;
-    const q = questions[qIndex % questions.length];
-    document.getElementById('quiz-question').textContent = `Q${total + 1}: ${q.q}`;
-    document.getElementById('quiz-feedback').textContent = '';
-    const opts = document.getElementById('quiz-options');
-    opts.innerHTML = '';
-    q.opts.forEach((opt, i) => {
-      const btn = document.createElement('button');
-      btn.className = 'quiz-opt';
-      btn.textContent = opt;
-      btn.onclick = () => checkAnswer(i, q.ans);
-      opts.appendChild(btn);
-    });
-    updateScore();
-  }
-
-  function checkAnswer(chosen, correct) {
-    if (answered) return;
-    answered = true;
-    total++;
-    const btns = document.querySelectorAll('.quiz-opt');
-    btns[chosen].classList.add(chosen === correct ? 'correct' : 'wrong');
-    btns[correct].classList.add('correct');
-    if (chosen === correct) { score++; launchConfetti(); }
-    document.getElementById('quiz-feedback').textContent = chosen === correct ? '✅ Correct!' : `❌ Wrong! It was: ${questions[qIndex % questions.length].opts[correct]}`;
-    updateScore();
-  }
-
-  function nextQuestion() {
-    qIndex++;
-    loadQuestion();
-  }
-
-  function updateScore() {
-    document.getElementById('quiz-score').textContent = `Score: ${score} / ${total}`;
-  }
-
-  // ── DRAW ────────────────────────────────────────────────
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  let drawing = false, brushColor = '#ff6ec7', brushSize = 6;
-
-  function setColor(c, dot) {
-    brushColor = c;
-    document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
-    if (dot) dot.classList.add('selected');
-  }
-
-  function setBrush(s) { brushSize = s; }
-  function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-
-  function getPos(e) {
-    const r = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / r.width;
-    const scaleY = canvas.height / r.height;
-    const src = e.touches ? e.touches[0] : e;
-    return { x: (src.clientX - r.left) * scaleX, y: (src.clientY - r.top) * scaleY };
-  }
-
-  canvas.addEventListener('mousedown',  e => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
-  canvas.addEventListener('mousemove',  e => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = brushColor; ctx.lineWidth = brushSize; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); });
-  canvas.addEventListener('mouseup',    () => drawing = false);
-  canvas.addEventListener('mouseleave', () => drawing = false);
-  canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
-  canvas.addEventListener('touchmove',  e => { e.preventDefault(); if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = brushColor; ctx.lineWidth = brushSize; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); });
-  canvas.addEventListener('touchend',   () => drawing = false);
-
-  // ── COUNTER ─────────────────────────────────────────────
-  let count = 0, clickTimes = [];
-
-  const milestones = {
-    10:  '🎉 10 clicks! Warming up!',
-    25:  '⚡ 25 clicks! You\'re rolling!',
-    50:  '🔥 50 clicks! ON FIRE!',
-    100: '💥 100 clicks! LEGENDARY!',
-    200: '🦄 200 clicks! ARE YOU EVEN HUMAN?!',
-    500: '👾 500... okay you need to touch grass'
-  };
-
-  function addClick() {
-    count++;
-    const el = document.getElementById('big-number');
-    el.textContent = count;
-    el.classList.add('pop');
-    setTimeout(() => el.classList.remove('pop'), 100);
-
-    if (milestones[count]) {
-      document.getElementById('milestone').textContent = milestones[count];
-      launchConfetti();
-    }
-
-    clickTimes.push(Date.now());
-    clickTimes = clickTimes.filter(t => Date.now() - t < 1000);
-    document.getElementById('speed-display').textContent = `Speed: ${clickTimes.length} clicks/sec`;
-  }
-
-  function resetCounter() {
-    count = 0;
-    clickTimes = [];
-    document.getElementById('big-number').textContent = '0';
-    document.getElementById('milestone').textContent = '';
-    document.getElementById('speed-display').textContent = '';
-  }
-
-  // ── TOAST ───────────────────────────────────────────────
-  const toast = document.getElementById('toast');
-  setTimeout(() => { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }, 500);
-
-  loadQuestion();
-</script>
-
+  </script>
 </body>
 </html>
