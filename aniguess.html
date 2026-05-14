@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AniGuess — Anime Guessing Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #080810;
+      --surface: #10101e;
+      --surface2: #161626;
+      --border: #1e1e2e;
+      --text: #e0e0f0;
+      --muted: #44445a;
+      --accent: #a855f7;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 100;
+    }
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+      text-decoration: none;
+    }
+    .logo span { color: var(--text); }
+    .header-center {
+      display: flex;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px;
+    }
+    .mode-btn {
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+    .mode-btn.active { background: var(--accent); color: #fff; }
+    .header-right { display: flex; gap: 8px; }
+    .icon-btn {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      transition: all 0.15s;
+    }
+    .icon-btn:hover { color: var(--text); border-color: #333; }
+    .back-link {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: var(--text); }
+
+    /* ── MAIN ── */
+    main {
+      flex: 1;
+      max-width: 760px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 28px 16px 60px;
+    }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .guess-counter {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+    .guess-counter span { color: var(--text); }
+    .daily-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    /* ── SEARCH ── */
+    .search-wrap { position: relative; margin-bottom: 24px; }
+    .search-input {
+      width: 100%;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--muted); }
+    .search-input:disabled { opacity: 0.4; cursor: not-allowed; }
+    .submit-btn {
+      position: absolute;
+      right: 8px; top: 50%;
+      transform: translateY(-50%);
+      padding: 8px 16px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .autocomplete {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0; right: 0;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      z-index: 50;
+      display: none;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+    .autocomplete.open { display: block; }
+    .ac-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.1s;
+    }
+    .ac-item:hover, .ac-item.focused { background: var(--border); }
+    .ac-item.guessed { opacity: 0.4; cursor: default; }
+    .ac-avatar {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .ac-title { font-weight: 500; }
+    .ac-year { font-size: 0.75rem; color: var(--muted); margin-left: auto; }
+    .error-msg {
+      font-size: 0.8rem;
+      color: var(--red);
+      margin-top: 6px;
+      min-height: 18px;
+    }
+
+    /* ── GUESS BOARD ── */
+    .board-header {
+      display: grid;
+      grid-template-columns: 180px 80px 160px 80px 90px 80px 80px;
+      gap: 6px;
+      margin-bottom: 8px;
+      padding: 0 4px;
+    }
+    .col-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: center;
+    }
+    .col-label:first-child { text-align: left; padding-left: 8px; }
+    .guess-row {
+      display: grid;
+      grid-template-columns: 180px 80px 160px 80px 90px 80px 80px;
+      gap: 6px;
+      margin-bottom: 6px;
+      animation: rowIn 0.35s ease;
+    }
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .cell {
+      border-radius: 8px;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      min-height: 62px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .cell.exact  { background: rgba(34,197,94,0.15);  border-color: rgba(34,197,94,0.3);  color: #4ade80; }
+    .cell.partial{ background: rgba(234,179,8,0.15);  border-color: rgba(234,179,8,0.3);  color: #fbbf24; }
+    .cell.wrong  { background: rgba(30,30,46,0.6);    border-color: var(--border);        color: var(--muted); }
+    .cell-title  { text-align: left; align-items: flex-start; }
+    .cell-title .anime-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .cell .arrow { font-size: 0.9rem; margin-top: 2px; }
+    .cell .val { font-size: 0.85rem; }
+    .cell .sub { font-size: 0.68rem; opacity: 0.7; margin-top: 2px; }
+    .cell .genres-list { font-size: 0.68rem; line-height: 1.5; }
+
+    /* ── RESULT SCREEN ── */
+    #result {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 32px 28px;
+      text-align: center;
+      margin-top: 24px;
+      animation: rowIn 0.4s ease;
+    }
+    #result.show { display: block; }
+    .result-emoji { font-size: 2.8rem; margin-bottom: 12px; }
+    .result-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+    .result-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 20px; }
+    .result-anime {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .result-avatar {
+      width: 60px; height: 60px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #fff;
+    }
+    .result-info .anime-title { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+    .result-info .anime-meta { font-size: 0.78rem; color: var(--muted); }
+    .result-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: #444; }
+
+    /* ── MODALS ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      max-width: 460px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+      animation: rowIn 0.25s ease;
+    }
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    /* Stats modal */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .stat-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+    .stat-val { font-size: 1.8rem; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
+    .stat-label { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+    .dist-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 0.8rem;
+    }
+    .dist-num { width: 16px; text-align: right; color: var(--muted); }
+    .dist-bar-wrap { flex: 1; background: var(--border); border-radius: 4px; height: 22px; overflow: hidden; }
+    .dist-bar {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: flex-end;
+      padding-right: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #fff;
+      min-width: 24px;
+      transition: width 0.5s ease;
+    }
+    .dist-bar.highlight { background: var(--green); }
+
+    /* How to play */
+    .htp-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .htp-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .hint-legend {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+    }
+    .legend-dot {
+      width: 16px; height: 16px;
+      border-radius: 4px;
+    }
+    .legend-dot.green  { background: rgba(34,197,94,0.4); border: 1px solid rgba(34,197,94,0.5); }
+    .legend-dot.yellow { background: rgba(234,179,8,0.4); border: 1px solid rgba(234,179,8,0.5); }
+    .legend-dot.grey   { background: rgba(30,30,46,0.8); border: 1px solid var(--border); }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #fff;
+      color: #111;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      z-index: 300;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 16px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      .board-header, .guess-row {
+        grid-template-columns: 1fr 56px 1fr 56px 72px 60px 60px;
+      }
+      .cell { padding: 8px 4px; min-height: 56px; font-size: 0.72rem; }
+      .cell-title .anime-name { font-size: 0.75rem; }
+      main { padding: 20px 10px 50px; }
+    }
+    @media (max-width: 500px) {
+      .board-header { display: none; }
+      .guess-row { grid-template-columns: 1fr; gap: 4px; }
+      .cell { flex-direction: row; justify-content: flex-start; gap: 8px; min-height: 40px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="game.html" class="back-link">← Games</a>
+  <a class="logo">Ani<span>Guess</span></a>
+  <div class="header-center">
+    <button class="mode-btn active" id="btn-daily" onclick="setMode('daily')">Daily</button>
+    <button class="mode-btn" id="btn-practice" onclick="setMode('practice')">Practice</button>
+  </div>
+  <div class="header-right">
+    <button class="icon-btn" onclick="openModal('htp')" title="How to play">?</button>
+    <button class="icon-btn" onclick="openModal('stats')" title="Stats">📊</button>
+  </div>
+</header>
+
+<main>
+  <div class="status-bar">
+    <div class="guess-counter">Guesses: <span id="counter">0</span>/10</div>
+    <div class="daily-label" id="mode-label">Daily #<span id="day-num">1</span></div>
+  </div>
+
+  <div class="search-wrap">
+    <input type="text" class="search-input" id="search" placeholder="Search anime title…" autocomplete="off" spellcheck="false">
+    <button class="submit-btn" id="submit-btn" onclick="submitGuess()">Guess</button>
+    <div class="autocomplete" id="ac-list"></div>
+    <div class="error-msg" id="error-msg"></div>
+  </div>
+
+  <div class="board-header">
+    <div class="col-label">Anime</div>
+    <div class="col-label">Year</div>
+    <div class="col-label">Genre</div>
+    <div class="col-label">Studio</div>
+    <div class="col-label">Episodes</div>
+    <div class="col-label">Format</div>
+    <div class="col-label">Rating</div>
+  </div>
+  <div id="board"></div>
+
+  <div id="result">
+    <div class="result-emoji" id="result-emoji"></div>
+    <div class="result-title" id="result-title"></div>
+    <div class="result-sub" id="result-sub"></div>
+    <div class="result-anime" id="result-anime"></div>
+    <div class="result-actions">
+      <button class="btn btn-primary" onclick="shareResult()">Share Result</button>
+      <button class="btn btn-secondary" id="new-game-btn" onclick="newPractice()" style="display:none">New Game</button>
+      <button class="btn btn-secondary" onclick="openModal('stats')">Stats</button>
+    </div>
+  </div>
+</main>
+
+<!-- Stats Modal -->
+<div class="modal-overlay" id="stats-modal" onclick="closeModal('stats')">
+  <div class="modal" onclick="e=>e.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('stats')">✕</button>
+    <div class="modal-title">Statistics</div>
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-val" id="s-played">0</div><div class="stat-label">Played</div></div>
+      <div class="stat-box"><div class="stat-val" id="s-wins">0</div><div class="stat-label">Wins</div></div>
+      <div class="stat-box"><div class="stat-val" id="s-streak">0</div><div class="stat-label">Streak</div></div>
+      <div class="stat-box"><div class="stat-val" id="s-max">0</div><div class="stat-label">Best</div></div>
+    </div>
+    <div style="font-size:0.75rem;color:var(--muted);margin-bottom:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase">Guess Distribution</div>
+    <div id="dist-bars"></div>
+  </div>
+</div>
+
+<!-- How to Play Modal -->
+<div class="modal-overlay" id="htp-modal" onclick="closeModal('htp')">
+  <div class="modal" onclick="e=>e.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('htp')">✕</button>
+    <div class="modal-title">How to Play</div>
+    <div class="htp-row"><div class="htp-icon">🎯</div><div>Guess the hidden anime in <strong>10 tries</strong>. A new anime drops every day in Daily mode.</div></div>
+    <div class="htp-row"><div class="htp-icon">🔍</div><div>Type an anime name and pick from the autocomplete. Each guess reveals comparison hints.</div></div>
+    <div class="htp-row"><div class="htp-icon">📅</div><div><strong>Year / Episodes / Rating</strong> — arrows show if the target is higher ↑ or lower ↓.</div></div>
+    <div class="htp-row"><div class="htp-icon">🎭</div><div><strong>Genre</strong> — green if all match, yellow if some match, grey if none.</div></div>
+    <div class="htp-row"><div class="htp-icon">🏠</div><div><strong>Studio</strong> and <strong>Format</strong> — green if exact match, grey otherwise.</div></div>
+    <div class="hint-legend">
+      <div class="legend-item"><div class="legend-dot green"></div> Exact match</div>
+      <div class="legend-item"><div class="legend-dot yellow"></div> Partial match</div>
+      <div class="legend-item"><div class="legend-dot grey"></div> No match / Wrong</div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<footer>AniGuess · 250+ anime · Daily &amp; Practice modes</footer>
+
+<script>
+// ──────────────────────────────────────────────────────────────────────────
+// CONSTANTS
+// ──────────────────────────────────────────────────────────────────────────
+const MAX_GUESSES = 10;
+const START_DATE = new Date('2024-01-01T00:00:00Z');
+
+// ──────────────────────────────────────────────────────────────────────────
+// ANIME DATASET  (255 entries)
+// ──────────────────────────────────────────────────────────────────────────
+const ANIME_DB = [
+  {id:"naruto",title:"Naruto",aliases:["Naruto Uzumaki"],year:2002,genres:["Action","Adventure","Fantasy","Martial Arts"],studio:"Pierrot",episodes:220,format:"TV",rating:7.9,popularity:3},
+  {id:"naruto-shippuden",title:"Naruto: Shippuden",aliases:["Shippuden","Naruto Shippuuden"],year:2007,genres:["Action","Adventure","Fantasy","Martial Arts"],studio:"Pierrot",episodes:500,format:"TV",rating:8.2,popularity:2},
+  {id:"boruto",title:"Boruto: Naruto Next Generations",aliases:["Boruto"],year:2017,genres:["Action","Adventure","Fantasy"],studio:"Pierrot",episodes:293,format:"TV",rating:5.8,popularity:15},
+  {id:"one-piece",title:"One Piece",aliases:["OP"],year:1999,genres:["Action","Adventure","Comedy","Fantasy"],studio:"Toei Animation",episodes:1100,format:"TV",rating:8.7,popularity:1},
+  {id:"death-note",title:"Death Note",aliases:["DN"],year:2006,genres:["Mystery","Psychological","Supernatural","Thriller"],studio:"Madhouse",episodes:37,format:"TV",rating:8.6,popularity:5},
+  {id:"attack-on-titan",title:"Attack on Titan",aliases:["AoT","Shingeki no Kyojin","SnK"],year:2013,genres:["Action","Drama","Fantasy","Horror"],studio:"Wit Studio",episodes:25,format:"TV",rating:8.5,popularity:4},
+  {id:"demon-slayer",title:"Demon Slayer: Kimetsu no Yaiba",aliases:["Kimetsu no Yaiba","KnY"],year:2019,genres:["Action","Fantasy","Historical"],studio:"ufotable",episodes:26,format:"TV",rating:8.6,popularity:6},
+  {id:"jujutsu-kaisen",title:"Jujutsu Kaisen",aliases:["JJK"],year:2020,genres:["Action","Fantasy","School","Supernatural"],studio:"MAPPA",episodes:24,format:"TV",rating:8.6,popularity:7},
+  {id:"bleach",title:"Bleach",aliases:[],year:2004,genres:["Action","Adventure","Fantasy","Supernatural"],studio:"Pierrot",episodes:366,format:"TV",rating:7.9,popularity:8},
+  {id:"dragon-ball",title:"Dragon Ball",aliases:["DB"],year:1986,genres:["Action","Adventure","Comedy","Fantasy","Martial Arts"],studio:"Toei Animation",episodes:153,format:"TV",rating:7.9,popularity:20},
+  {id:"dragon-ball-z",title:"Dragon Ball Z",aliases:["DBZ"],year:1989,genres:["Action","Adventure","Fantasy","Martial Arts"],studio:"Toei Animation",episodes:291,format:"TV",rating:8.1,popularity:10},
+  {id:"dragon-ball-super",title:"Dragon Ball Super",aliases:["DBS"],year:2015,genres:["Action","Adventure","Comedy","Fantasy","Martial Arts"],studio:"Toei Animation",episodes:131,format:"TV",rating:6.8,popularity:12},
+  {id:"fma",title:"Fullmetal Alchemist",aliases:["FMA"],year:2003,genres:["Action","Adventure","Drama","Fantasy"],studio:"Bones",episodes:51,format:"TV",rating:8.0,popularity:25},
+  {id:"fmab",title:"Fullmetal Alchemist: Brotherhood",aliases:["FMAB","FMA Brotherhood"],year:2009,genres:["Action","Adventure","Drama","Fantasy"],studio:"Bones",episodes:64,format:"TV",rating:9.1,popularity:9},
+  {id:"hxh",title:"Hunter x Hunter (2011)",aliases:["HxH","Hunter Hunter"],year:2011,genres:["Action","Adventure","Fantasy"],studio:"Madhouse",episodes:148,format:"TV",rating:9.0,popularity:11},
+  {id:"tokyo-ghoul",title:"Tokyo Ghoul",aliases:["TG"],year:2014,genres:["Action","Drama","Horror","Psychological","Supernatural"],studio:"Pierrot",episodes:12,format:"TV",rating:7.8,popularity:18},
+  {id:"chainsaw-man",title:"Chainsaw Man",aliases:["CSM"],year:2022,genres:["Action","Fantasy","Horror","Supernatural"],studio:"MAPPA",episodes:12,format:"TV",rating:8.6,popularity:14},
+  {id:"spy-x-family",title:"Spy x Family",aliases:["SpyxFamily","Spy Family"],year:2022,genres:["Action","Comedy","Family","School"],studio:"Wit Studio",episodes:25,format:"TV",rating:8.5,popularity:16},
+  {id:"one-punch-man",title:"One Punch Man",aliases:["OPM"],year:2015,genres:["Action","Comedy","Sci-Fi","Superhero"],studio:"Madhouse",episodes:12,format:"TV",rating:8.6,popularity:13},
+  {id:"mob-psycho",title:"Mob Psycho 100",aliases:["Mob Psycho","MP100"],year:2016,genres:["Action","Comedy","Psychological","Supernatural"],studio:"Bones",episodes:12,format:"TV",rating:8.5,popularity:22},
+  {id:"my-hero-academia",title:"My Hero Academia",aliases:["MHA","Boku no Hero Academia","BnHA"],year:2016,genres:["Action","Comedy","School","Superhero"],studio:"Bones",episodes:13,format:"TV",rating:7.9,popularity:17},
+  {id:"black-clover",title:"Black Clover",aliases:["BC"],year:2017,genres:["Action","Comedy","Fantasy","Magic"],studio:"Pierrot",episodes:170,format:"TV",rating:7.5,popularity:30},
+  {id:"haikyuu",title:"Haikyuu!!",aliases:["Haikyuu","Volleyball Anime","Haikyu"],year:2014,genres:["Comedy","Drama","School","Sports"],studio:"Production I.G",episodes:25,format:"TV",rating:8.7,popularity:19},
+  {id:"vinland-saga",title:"Vinland Saga",aliases:["VS"],year:2019,genres:["Action","Adventure","Drama","Historical"],studio:"Wit Studio",episodes:24,format:"TV",rating:8.8,popularity:23},
+  {id:"frieren",title:"Frieren: Beyond Journey's End",aliases:["Frieren","Sousou no Frieren"],year:2023,genres:["Adventure","Drama","Fantasy","Slice of Life"],studio:"Madhouse",episodes:28,format:"TV",rating:9.0,popularity:26},
+  {id:"solo-leveling",title:"Solo Leveling",aliases:["SL","Ore dake Level Up"],year:2024,genres:["Action","Adventure","Fantasy"],studio:"A-1 Pictures",episodes:12,format:"TV",rating:8.5,popularity:27},
+  {id:"blue-lock",title:"Blue Lock",aliases:["Bluelock"],year:2022,genres:["Action","School","Sports"],studio:"Eight Bit",episodes:24,format:"TV",rating:8.3,popularity:28},
+  {id:"monster",title:"Monster",aliases:["Naoki Urasawa Monster"],year:2004,genres:["Drama","Mystery","Psychological","Thriller"],studio:"Madhouse",episodes:74,format:"TV",rating:8.9,popularity:35},
+  {id:"berserk",title:"Berserk",aliases:["Berserk 1997"],year:1997,genres:["Action","Adventure","Drama","Fantasy","Horror"],studio:"OLM",episodes:25,format:"TV",rating:8.5,popularity:40},
+  {id:"jojo",title:"JoJo's Bizarre Adventure",aliases:["JJBA","JoJo"],year:2012,genres:["Action","Adventure","Supernatural"],studio:"David Production",episodes:26,format:"TV",rating:8.0,popularity:32},
+  {id:"sword-art-online",title:"Sword Art Online",aliases:["SAO"],year:2012,genres:["Action","Adventure","Fantasy","Romance"],studio:"A-1 Pictures",episodes:25,format:"TV",rating:7.2,popularity:21},
+  {id:"rezero",title:"Re:Zero − Starting Life in Another World",aliases:["ReZero","Re Zero","Re:Zero"],year:2016,genres:["Drama","Fantasy","Psychological","Thriller"],studio:"White Fox",episodes:25,format:"TV",rating:8.3,popularity:24},
+  {id:"mushoku-tensei",title:"Mushoku Tensei: Jobless Reincarnation",aliases:["Mushoku Tensei","Jobless Reincarnation"],year:2021,genres:["Adventure","Drama","Fantasy"],studio:"Bind",episodes:11,format:"TV",rating:8.3,popularity:29},
+  {id:"konosuba",title:"KonoSuba: God's Blessing on This Wonderful World!",aliases:["Konosuba"],year:2016,genres:["Adventure","Comedy","Fantasy","Parody"],studio:"Studio Deen",episodes:10,format:"TV",rating:8.2,popularity:31},
+  {id:"no-game-no-life",title:"No Game No Life",aliases:["NGNL"],year:2014,genres:["Adventure","Comedy","Fantasy","Game"],studio:"Madhouse",episodes:12,format:"TV",rating:8.1,popularity:33},
+  {id:"slime",title:"That Time I Got Reincarnated as a Slime",aliases:["TenSura","Slime Isekai","Tensura"],year:2018,genres:["Adventure","Comedy","Fantasy"],studio:"8bit",episodes:24,format:"TV",rating:8.0,popularity:34},
+  {id:"overlord",title:"Overlord",aliases:[],year:2015,genres:["Action","Adventure","Fantasy","Game"],studio:"Madhouse",episodes:13,format:"TV",rating:7.9,popularity:36},
+  {id:"shield-hero",title:"The Rising of the Shield Hero",aliases:["Shield Hero","Tate no Yuusha"],year:2019,genres:["Action","Adventure","Drama","Fantasy"],studio:"Kinema Citrus",episodes:25,format:"TV",rating:7.9,popularity:37},
+  {id:"kaguya",title:"Kaguya-sama: Love Is War",aliases:["Kaguya-sama","Love is War"],year:2019,genres:["Comedy","Romance","School","Psychological"],studio:"A-1 Pictures",episodes:12,format:"TV",rating:8.5,popularity:38},
+  {id:"toradora",title:"Toradora!",aliases:["Toradora"],year:2008,genres:["Comedy","Drama","Romance","School"],studio:"J.C. Staff",episodes:25,format:"TV",rating:8.1,popularity:39},
+  {id:"your-lie-in-april",title:"Your Lie in April",aliases:["Shigatsu wa Kimi no Uso","Kimiuso"],year:2014,genres:["Drama","Music","Romance","School"],studio:"A-1 Pictures",episodes:22,format:"TV",rating:8.7,popularity:41},
+  {id:"clannad",title:"Clannad",aliases:[],year:2007,genres:["Drama","Romance","School","Slice of Life","Supernatural"],studio:"Kyoto Animation",episodes:23,format:"TV",rating:8.2,popularity:42},
+  {id:"clannad-after",title:"Clannad: After Story",aliases:["Clannad After Story","Clannad S2"],year:2008,genres:["Drama","Fantasy","Romance","Slice of Life"],studio:"Kyoto Animation",episodes:24,format:"TV",rating:8.9,popularity:42},
+  {id:"violet-evergarden",title:"Violet Evergarden",aliases:["VE"],year:2018,genres:["Drama","Fantasy","Slice of Life"],studio:"Kyoto Animation",episodes:13,format:"TV",rating:8.7,popularity:43},
+  {id:"fruits-basket",title:"Fruits Basket (2019)",aliases:["Furuba","Fruits Basket 2019"],year:2019,genres:["Drama","Romance","School","Slice of Life","Supernatural"],studio:"TMS Entertainment",episodes:25,format:"TV",rating:8.2,popularity:44},
+  {id:"horimiya",title:"Horimiya",aliases:[],year:2021,genres:["Comedy","Romance","School","Slice of Life"],studio:"CloverWorks",episodes:13,format:"TV",rating:8.2,popularity:45},
+  {id:"rascal-bunny",title:"Rascal Does Not Dream of Bunny Girl Senpai",aliases:["Bunny Girl Senpai","Aobuta"],year:2018,genres:["Drama","Mystery","Romance","School","Supernatural"],studio:"CloverWorks",episodes:13,format:"TV",rating:8.3,popularity:46},
+  {id:"quintuplets",title:"The Quintessential Quintuplets",aliases:["5-toubun no Hanayome","Gotoubun"],year:2019,genres:["Comedy","Harem","Romance","School"],studio:"Tezuka Productions",episodes:12,format:"TV",rating:7.7,popularity:47},
+  {id:"komi",title:"Komi Can't Communicate",aliases:["Komi-san","Comyushou"],year:2021,genres:["Comedy","Romance","School","Slice of Life"],studio:"OLM",episodes:12,format:"TV",rating:7.5,popularity:48},
+  {id:"dress-up-darling",title:"My Dress-Up Darling",aliases:["Sono Bisque Doll","Bisque Doll"],year:2022,genres:["Comedy","Ecchi","Romance","School","Slice of Life"],studio:"CloverWorks",episodes:12,format:"TV",rating:8.2,popularity:49},
+  {id:"takagi-san",title:"Teasing Master Takagi-san",aliases:["Karakai Jouzu no Takagi-san","Takagi-san"],year:2018,genres:["Comedy","Romance","School","Slice of Life"],studio:"Shin-Ei Animation",episodes:12,format:"TV",rating:8.0,popularity:50},
+  {id:"nagatoro",title:"Don't Toy With Me, Miss Nagatoro",aliases:["Nagatoro","Ijiranaide Nagatoro-san"],year:2021,genres:["Comedy","Romance","School","Slice of Life"],studio:"Telecom Animation Film",episodes:12,format:"TV",rating:7.8,popularity:51},
+  {id:"rent-a-girlfriend",title:"Rent-a-Girlfriend",aliases:["Kanojo Okarishimasu","KanoKari"],year:2020,genres:["Comedy","Harem","Romance","School"],studio:"TMS Entertainment",episodes:12,format:"TV",rating:7.0,popularity:52},
+  {id:"golden-time",title:"Golden Time",aliases:[],year:2013,genres:["Comedy","Drama","Romance"],studio:"J.C. Staff",episodes:24,format:"TV",rating:7.7,popularity:53},
+  {id:"orange",title:"Orange",aliases:[],year:2016,genres:["Drama","Romance","School","Supernatural"],studio:"Telecom Animation Film",episodes:13,format:"TV",rating:7.6,popularity:55},
+  {id:"blue-spring-ride",title:"Blue Spring Ride",aliases:["Ao Haru Ride"],year:2014,genres:["Drama","Romance","School"],studio:"Production I.G",episodes:12,format:"TV",rating:7.8,popularity:56},
+  {id:"kimi-ni-todoke",title:"Kimi ni Todoke",aliases:["From Me to You","Reaching You"],year:2009,genres:["Drama","Romance","School","Slice of Life"],studio:"Production I.G",episodes:25,format:"TV",rating:8.0,popularity:57},
+  {id:"wotakoi",title:"Wotakoi: Love is Hard for Otaku",aliases:["Wotaku ni Koi wa Muzukashii"],year:2018,genres:["Comedy","Romance","Slice of Life"],studio:"A-1 Pictures",episodes:11,format:"TV",rating:7.9,popularity:58},
+  {id:"relive",title:"ReLIFE",aliases:[],year:2016,genres:["Comedy","Drama","Romance","School","Slice of Life"],studio:"TMS Entertainment",episodes:13,format:"TV",rating:8.0,popularity:59},
+  {id:"anohana",title:"AnoHana: The Flower We Saw That Day",aliases:["AnoHana","Anohana"],year:2011,genres:["Drama","Slice of Life","Supernatural"],studio:"A-1 Pictures",episodes:11,format:"TV",rating:8.5,popularity:60},
+  {id:"angel-beats",title:"Angel Beats!",aliases:["Angel Beats"],year:2010,genres:["Action","Comedy","Drama","School","Supernatural"],studio:"P.A. Works",episodes:13,format:"TV",rating:8.1,popularity:61},
+  {id:"plastic-memories",title:"Plastic Memories",aliases:[],year:2015,genres:["Drama","Romance","Sci-Fi"],studio:"Doga Kobo",episodes:13,format:"TV",rating:7.8,popularity:62},
+  {id:"march-comes",title:"March Comes in Like a Lion",aliases:["3-gatsu no Lion","Sangatsu no Lion"],year:2016,genres:["Drama","Slice of Life"],studio:"Shaft",episodes:22,format:"TV",rating:8.4,popularity:63},
+  {id:"hyouka",title:"Hyouka",aliases:[],year:2012,genres:["Mystery","Romance","School","Slice of Life"],studio:"Kyoto Animation",episodes:22,format:"TV",rating:8.1,popularity:64},
+  {id:"haruhi",title:"The Melancholy of Haruhi Suzumiya",aliases:["Haruhi Suzumiya","Suzumiya Haruhi"],year:2006,genres:["Comedy","Mystery","School","Sci-Fi","Supernatural"],studio:"Kyoto Animation",episodes:14,format:"TV",rating:8.1,popularity:65},
+  {id:"lucky-star",title:"Lucky Star",aliases:["Lucky☆Star"],year:2007,genres:["Comedy","School","Slice of Life"],studio:"Kyoto Animation",episodes:24,format:"TV",rating:7.5,popularity:66},
+  {id:"k-on",title:"K-On!",aliases:["K-ON","Keion"],year:2009,genres:["Comedy","Music","School","Slice of Life"],studio:"Kyoto Animation",episodes:13,format:"TV",rating:8.0,popularity:67},
+  {id:"nichijou",title:"Nichijou",aliases:["My Ordinary Life"],year:2011,genres:["Comedy","School","Slice of Life"],studio:"Kyoto Animation",episodes:26,format:"TV",rating:8.3,popularity:68},
+  {id:"grand-blue",title:"Grand Blue Dreaming",aliases:["Grand Blue"],year:2018,genres:["Comedy","Slice of Life"],studio:"Zero-G",episodes:12,format:"TV",rating:8.2,popularity:69},
+  {id:"daily-lives",title:"Daily Lives of High School Boys",aliases:["Nichibros","Danshi Koukousei no Nichijou"],year:2012,genres:["Comedy","School","Slice of Life"],studio:"Sunrise",episodes:12,format:"TV",rating:8.1,popularity:70},
+  {id:"saiki-k",title:"The Disastrous Life of Saiki K.",aliases:["Saiki K","Saiki Kusuo no Psi Nan"],year:2016,genres:["Comedy","School","Slice of Life","Supernatural"],studio:"J.C. Staff",episodes:120,format:"TV",rating:8.5,popularity:71},
+  {id:"bocchi",title:"Bocchi the Rock!",aliases:["Bocchi","BTR"],year:2022,genres:["Comedy","Music","School","Slice of Life"],studio:"CloverWorks",episodes:12,format:"TV",rating:9.0,popularity:72},
+  {id:"oshi-no-ko",title:"Oshi no Ko",aliases:["[Oshi No Ko]"],year:2023,genres:["Drama","Mystery","Psychological","Supernatural"],studio:"Doga Kobo",episodes:11,format:"TV",rating:8.8,popularity:73},
+  {id:"apothecary",title:"The Apothecary Diaries",aliases:["Kusuriya no Hitorigoto"],year:2023,genres:["Drama","Historical","Mystery","Romance"],studio:"Toei Animation",episodes:24,format:"TV",rating:8.8,popularity:74},
+  {id:"kuroko",title:"Kuroko's Basketball",aliases:["Kuroko no Basket","KnB"],year:2012,genres:["Comedy","School","Sports"],studio:"Production I.G",episodes:25,format:"TV",rating:8.0,popularity:75},
+  {id:"slam-dunk",title:"Slam Dunk",aliases:["Slam Dunk 1993"],year:1993,genres:["Comedy","Drama","School","Sports"],studio:"Toei Animation",episodes:101,format:"TV",rating:8.5,popularity:76},
+  {id:"run-with-wind",title:"Run with the Wind",aliases:["Kaze ga Tsuyoku Fuiteiru"],year:2018,genres:["Drama","School","Sports"],studio:"Production I.G",episodes:23,format:"TV",rating:8.6,popularity:77},
+  {id:"yuri-on-ice",title:"Yuri!!! on Ice",aliases:["Yuri on Ice","YoI"],year:2016,genres:["Drama","Romance","Sports"],studio:"MAPPA",episodes:12,format:"TV",rating:8.2,popularity:78},
+  {id:"free",title:"Free!",aliases:["Free! Iwatobi Swim Club"],year:2013,genres:["Comedy","Drama","School","Sports"],studio:"Kyoto Animation",episodes:12,format:"TV",rating:7.8,popularity:79},
+  {id:"ping-pong",title:"Ping Pong the Animation",aliases:["Ping Pong"],year:2014,genres:["Drama","Psychological","School","Sports"],studio:"Tatsunoko Production",episodes:11,format:"TV",rating:8.7,popularity:80},
+  {id:"initial-d",title:"Initial D",aliases:["Initial D First Stage"],year:1998,genres:["Action","Cars","Sports"],studio:"Pastel",episodes:26,format:"TV",rating:7.9,popularity:81},
+  {id:"sk8",title:"SK8 the Infinity",aliases:["SK8","Sk8 Infinity"],year:2021,genres:["Action","Comedy","School","Sports"],studio:"Bones",episodes:12,format:"TV",rating:8.1,popularity:82},
+  {id:"hajime",title:"Hajime no Ippo",aliases:["Fighting Spirit","Ippo"],year:2000,genres:["Comedy","Drama","School","Sports"],studio:"Madhouse",episodes:75,format:"TV",rating:8.8,popularity:83},
+  {id:"food-wars",title:"Food Wars! Shokugeki no Soma",aliases:["Shokugeki no Soma","Food Wars"],year:2015,genres:["Action","Comedy","Ecchi","School"],studio:"J.C. Staff",episodes:24,format:"TV",rating:8.0,popularity:84},
+  {id:"ace-diamond",title:"Ace of Diamond",aliases:["Diamond no Ace","Daiya no A"],year:2013,genres:["Drama","School","Sports"],studio:"Madhouse",episodes:75,format:"TV",rating:8.0,popularity:85},
+  {id:"steins-gate",title:"Steins;Gate",aliases:["Steins Gate"],year:2011,genres:["Drama","Mystery","Sci-Fi","Thriller"],studio:"White Fox",episodes:24,format:"TV",rating:9.1,popularity:86},
+  {id:"code-geass",title:"Code Geass: Lelouch of the Rebellion",aliases:["Code Geass","Lelouch","Geass"],year:2006,genres:["Action","Drama","Mecha","Sci-Fi","School"],studio:"Sunrise",episodes:25,format:"TV",rating:8.7,popularity:87},
+  {id:"psycho-pass",title:"Psycho-Pass",aliases:["Psycho Pass"],year:2012,genres:["Action","Mystery","Psychological","Sci-Fi","Thriller"],studio:"Production I.G",episodes:22,format:"TV",rating:8.4,popularity:88},
+  {id:"erased",title:"Erased",aliases:["Boku dake ga Inai Machi","ERASED"],year:2016,genres:["Drama","Mystery","Psychological","Thriller"],studio:"A-1 Pictures",episodes:12,format:"TV",rating:8.4,popularity:89},
+  {id:"parasyte",title:"Parasyte: The Maxim",aliases:["Parasyte","Kiseijuu"],year:2014,genres:["Action","Drama","Horror","Psychological","Sci-Fi"],studio:"Madhouse",episodes:24,format:"TV",rating:8.4,popularity:90},
+  {id:"death-parade",title:"Death Parade",aliases:[],year:2015,genres:["Drama","Game","Mystery","Psychological","Supernatural"],studio:"Madhouse",episodes:12,format:"TV",rating:8.2,popularity:91},
+  {id:"odd-taxi",title:"Odd Taxi",aliases:["Odokoi"],year:2021,genres:["Mystery","Psychological","Thriller"],studio:"OLM",episodes:13,format:"TV",rating:8.7,popularity:92},
+  {id:"cowboy-bebop",title:"Cowboy Bebop",aliases:["CB"],year:1998,genres:["Action","Adventure","Comedy","Drama","Sci-Fi","Space"],studio:"Sunrise",episodes:26,format:"TV",rating:8.9,popularity:93},
+  {id:"evangelion",title:"Neon Genesis Evangelion",aliases:["NGE","Evangelion","Eva"],year:1995,genres:["Action","Drama","Mecha","Psychological","Sci-Fi"],studio:"Gainax",episodes:26,format:"TV",rating:8.5,popularity:94},
+  {id:"samurai-champloo",title:"Samurai Champloo",aliases:["Champloo"],year:2004,genres:["Action","Adventure","Historical","Samurai"],studio:"Manglobe",episodes:26,format:"TV",rating:8.5,popularity:95},
+  {id:"serial-experiments-lain",title:"Serial Experiments Lain",aliases:["Lain"],year:1998,genres:["Drama","Mystery","Psychological","Sci-Fi","Supernatural"],studio:"Triangle Staff",episodes:13,format:"TV",rating:8.0,popularity:96},
+  {id:"space-dandy",title:"Space Dandy",aliases:[],year:2014,genres:["Action","Adventure","Comedy","Sci-Fi","Space"],studio:"Bones",episodes:13,format:"TV",rating:7.9,popularity:97},
+  {id:"planetes",title:"Planetes",aliases:[],year:2003,genres:["Drama","Romance","Sci-Fi","Space"],studio:"Sunrise",episodes:26,format:"TV",rating:8.5,popularity:98},
+  {id:"trigun",title:"Trigun",aliases:[],year:1998,genres:["Action","Adventure","Comedy","Drama","Sci-Fi"],studio:"Madhouse",episodes:26,format:"TV",rating:8.2,popularity:99},
+  {id:"gurren-lagann",title:"Tengen Toppa Gurren Lagann",aliases:["Gurren Lagann","TTGL"],year:2007,genres:["Action","Adventure","Drama","Mecha","Sci-Fi"],studio:"Gainax",episodes:27,format:"TV",rating:8.6,popularity:100},
+  {id:"darling-franxx",title:"Darling in the FranXX",aliases:["DitF","FranXX"],year:2018,genres:["Action","Drama","Mecha","Romance","Sci-Fi"],studio:"A-1 Pictures",episodes:24,format:"TV",rating:7.3,popularity:101},
+  {id:"86",title:"86 Eighty-Six",aliases:["86","Eighty Six"],year:2021,genres:["Action","Drama","Mecha","Sci-Fi"],studio:"A-1 Pictures",episodes:11,format:"TV",rating:8.4,popularity:102},
+  {id:"kill-la-kill",title:"Kill la Kill",aliases:["KlK"],year:2013,genres:["Action","Comedy","School","Supernatural"],studio:"Trigger",episodes:24,format:"TV",rating:8.2,popularity:103},
+  {id:"promare",title:"Promare",aliases:[],year:2019,genres:["Action","Fantasy","Sci-Fi"],studio:"Trigger",episodes:1,format:"Movie",rating:8.0,popularity:104},
+  {id:"hellsing-ultimate",title:"Hellsing Ultimate",aliases:["Hellsing OVA","Hellsing"],year:2006,genres:["Action","Horror","Supernatural","Vampire"],studio:"Madhouse",episodes:10,format:"OVA",rating:8.5,popularity:105},
+  {id:"elfen-lied",title:"Elfen Lied",aliases:[],year:2004,genres:["Action","Drama","Horror","Psychological","Romance","Sci-Fi"],studio:"Arms",episodes:13,format:"TV",rating:7.8,popularity:106},
+  {id:"higurashi",title:"Higurashi When They Cry",aliases:["Higurashi no Naku Koro ni","Higurashi"],year:2006,genres:["Horror","Mystery","Psychological","Supernatural","Thriller"],studio:"Deen",episodes:26,format:"TV",rating:8.1,popularity:107},
+  {id:"shiki",title:"Shiki",aliases:[],year:2010,genres:["Horror","Mystery","Supernatural","Vampire"],studio:"Daume",episodes:22,format:"TV",rating:7.9,popularity:108},
+  {id:"another",title:"Another",aliases:[],year:2012,genres:["Horror","Mystery","Supernatural","Thriller"],studio:"P.A. Works",episodes:12,format:"TV",rating:7.5,popularity:109},
+  {id:"devilman-crybaby",title:"Devilman Crybaby",aliases:["Devilman"],year:2018,genres:["Action","Drama","Horror","Psychological","Supernatural"],studio:"Science SARU",episodes:10,format:"ONA",rating:7.8,popularity:110},
+  {id:"made-in-abyss",title:"Made in Abyss",aliases:["MiA"],year:2017,genres:["Adventure","Drama","Fantasy","Mystery","Sci-Fi"],studio:"Kinema Citrus",episodes:13,format:"TV",rating:8.8,popularity:111},
+  {id:"promised-neverland",title:"The Promised Neverland",aliases:["Yakusoku no Neverland","TPN"],year:2019,genres:["Horror","Mystery","Psychological","Sci-Fi","Thriller"],studio:"CloverWorks",episodes:12,format:"TV",rating:8.6,popularity:112},
+  {id:"sailor-moon",title:"Sailor Moon",aliases:["Bishoujo Senshi Sailor Moon","BSSM"],year:1992,genres:["Action","Comedy","Drama","Fantasy","Magic","Romance"],studio:"Toei Animation",episodes:46,format:"TV",rating:7.9,popularity:113},
+  {id:"cardcaptor-sakura",title:"Cardcaptor Sakura",aliases:["CCS","Card Captor Sakura"],year:1998,genres:["Adventure","Comedy","Drama","Fantasy","Magic","Romance"],studio:"Madhouse",episodes:70,format:"TV",rating:8.0,popularity:114},
+  {id:"inuyasha",title:"Inuyasha",aliases:[],year:2000,genres:["Action","Adventure","Fantasy","Historical","Romance","Supernatural"],studio:"Sunrise",episodes:167,format:"TV",rating:7.9,popularity:115},
+  {id:"yu-yu-hakusho",title:"Yu Yu Hakusho",aliases:["YYH","Ghost Files"],year:1992,genres:["Action","Adventure","Comedy","Drama","Supernatural"],studio:"Pierrot",episodes:112,format:"TV",rating:8.5,popularity:116},
+  {id:"rurouni-kenshin",title:"Rurouni Kenshin",aliases:["Samurai X","Kenshin"],year:1996,genres:["Action","Adventure","Historical","Romance","Samurai"],studio:"Gallop",episodes:94,format:"TV",rating:8.3,popularity:117},
+  {id:"gintama",title:"Gintama",aliases:["Gin Tama"],year:2006,genres:["Action","Comedy","Historical","Parody","Samurai","Sci-Fi"],studio:"Sunrise",episodes:201,format:"TV",rating:9.0,popularity:118},
+  {id:"fairy-tail",title:"Fairy Tail",aliases:["FT"],year:2009,genres:["Action","Adventure","Comedy","Fantasy","Magic"],studio:"A-1 Pictures",episodes:175,format:"TV",rating:7.8,popularity:119},
+  {id:"assassination-classroom",title:"Assassination Classroom",aliases:["Ansatsu Kyoushitsu","AssClass"],year:2015,genres:["Action","Comedy","School"],studio:"Lerche",episodes:22,format:"TV",rating:8.1,popularity:120},
+  {id:"dr-stone",title:"Dr. Stone",aliases:["DrStone"],year:2019,genres:["Action","Adventure","Comedy","Sci-Fi"],studio:"TMS Entertainment",episodes:24,format:"TV",rating:8.2,popularity:121},
+  {id:"detective-conan",title:"Detective Conan",aliases:["Case Closed","Meitantei Conan","Conan"],year:1996,genres:["Adventure","Comedy","Mystery"],studio:"TMS Entertainment",episodes:1100,format:"TV",rating:8.1,popularity:122},
+  {id:"black-lagoon",title:"Black Lagoon",aliases:[],year:2006,genres:["Action","Adventure","Crime","Drama"],studio:"Madhouse",episodes:12,format:"TV",rating:8.0,popularity:123},
+  {id:"baccano",title:"Baccano!",aliases:["Baccano"],year:2007,genres:["Action","Comedy","Crime","Mystery","Supernatural"],studio:"Brain's Base",episodes:13,format:"TV",rating:8.4,popularity:124},
+  {id:"durarara",title:"Durarara!!",aliases:["DRRR","Durarara"],year:2010,genres:["Action","Mystery","Supernatural"],studio:"Brain's Base",episodes:24,format:"TV",rating:8.2,popularity:125},
+  {id:"tanya-evil",title:"The Saga of Tanya the Evil",aliases:["Youjo Senki","Tanya Evil"],year:2017,genres:["Action","Fantasy","Military","Supernatural"],studio:"NUT",episodes:12,format:"TV",rating:8.0,popularity:126},
+  {id:"devil-part-timer",title:"The Devil Is a Part-Timer!",aliases:["Hataraku Maou-sama","Devil Part Timer"],year:2013,genres:["Comedy","Fantasy","Romance"],studio:"White Fox",episodes:13,format:"TV",rating:8.0,popularity:127},
+  {id:"log-horizon",title:"Log Horizon",aliases:["LH"],year:2013,genres:["Action","Adventure","Fantasy","Game"],studio:"Satelight",episodes:25,format:"TV",rating:7.8,popularity:128},
+  {id:"eminence-shadow",title:"The Eminence in Shadow",aliases:["Kage no Jitsuryokusha","Shadow Garden"],year:2022,genres:["Action","Comedy","Fantasy","Isekai"],studio:"Nexus",episodes:20,format:"TV",rating:8.1,popularity:130},
+  {id:"goblin-slayer",title:"Goblin Slayer",aliases:["GS"],year:2018,genres:["Action","Adventure","Dark Fantasy","Fantasy"],studio:"White Fox",episodes:12,format:"TV",rating:7.5,popularity:131},
+  {id:"ranking-kings",title:"Ranking of Kings",aliases:["Ousama Ranking"],year:2021,genres:["Adventure","Drama","Fantasy"],studio:"Wit Studio",episodes:23,format:"TV",rating:8.7,popularity:132},
+  {id:"to-your-eternity",title:"To Your Eternity",aliases:["Fumetsu no Anata e"],year:2021,genres:["Adventure","Drama","Fantasy","Supernatural"],studio:"Brain's Base",episodes:20,format:"TV",rating:8.2,popularity:133},
+  {id:"dororo",title:"Dororo",aliases:["Dororo 2019"],year:2019,genres:["Action","Adventure","Drama","Fantasy","Historical"],studio:"MAPPA",episodes:24,format:"TV",rating:8.3,popularity:134},
+  {id:"tokyo-revengers",title:"Tokyo Revengers",aliases:["TR"],year:2021,genres:["Action","Drama","Supernatural","Thriller"],studio:"LIDEN FILMS",episodes:24,format:"TV",rating:7.9,popularity:135},
+  {id:"bungo-stray-dogs",title:"Bungo Stray Dogs",aliases:["BSD","Bungou Stray Dogs"],year:2016,genres:["Action","Comedy","Mystery","Supernatural"],studio:"Bones",episodes:12,format:"TV",rating:7.9,popularity:136},
+  {id:"heavenly-delusion",title:"Heavenly Delusion",aliases:["Tengoku Daimakyou"],year:2023,genres:["Action","Drama","Mystery","Sci-Fi"],studio:"Production I.G",episodes:13,format:"TV",rating:8.5,popularity:137},
+  {id:"hells-paradise",title:"Hell's Paradise",aliases:["Jigokuraku"],year:2023,genres:["Action","Adventure","Fantasy","Historical"],studio:"MAPPA",episodes:13,format:"TV",rating:8.5,popularity:138},
+  {id:"mashle",title:"Mashle: Magic and Muscles",aliases:["Mashle"],year:2023,genres:["Action","Comedy","Fantasy","School","Supernatural"],studio:"A-1 Pictures",episodes:12,format:"TV",rating:8.1,popularity:139},
+  {id:"zom-100",title:"Zom 100: Bucket List of the Dead",aliases:["Zom100"],year:2023,genres:["Action","Adventure","Comedy","Horror"],studio:"BUG FILMS",episodes:12,format:"TV",rating:7.8,popularity:140},
+  {id:"kaiju-no-8",title:"Kaiju No. 8",aliases:["Kaiju 8","Kaijuu 8-gou"],year:2024,genres:["Action","Fantasy","Sci-Fi"],studio:"Production I.G",episodes:12,format:"TV",rating:8.0,popularity:141},
+  {id:"dandadan",title:"DAN DA DAN",aliases:["Dandadan"],year:2024,genres:["Action","Comedy","Romance","Sci-Fi","Supernatural"],studio:"Science SARU",episodes:12,format:"TV",rating:8.6,popularity:143},
+  {id:"undead-unluck",title:"Undead Unluck",aliases:["UU"],year:2023,genres:["Action","Adventure","Comedy","Fantasy","Romance","Supernatural"],studio:"David Production",episodes:24,format:"TV",rating:8.2,popularity:144},
+  {id:"classroom-elite",title:"Classroom of the Elite",aliases:["YouZitsu","Youkoso Jitsuryoku"],year:2017,genres:["Drama","Psychological","School"],studio:"Lerche",episodes:12,format:"TV",rating:7.6,popularity:145},
+  {id:"fate-zero",title:"Fate/Zero",aliases:["Fate Zero"],year:2011,genres:["Action","Drama","Fantasy","Supernatural","Thriller"],studio:"ufotable",episodes:13,format:"TV",rating:8.7,popularity:146},
+  {id:"fate-ubw",title:"Fate/stay night: Unlimited Blade Works",aliases:["UBW","Fate UBW"],year:2014,genres:["Action","Fantasy","Magic","Supernatural"],studio:"ufotable",episodes:12,format:"TV",rating:8.3,popularity:147},
+  {id:"bakemonogatari",title:"Bakemonogatari",aliases:["Monogatari","Monogatari Series"],year:2009,genres:["Mystery","Romance","School","Supernatural","Vampire"],studio:"Shaft",episodes:15,format:"TV",rating:8.3,popularity:148},
+  {id:"ouran",title:"Ouran High School Host Club",aliases:["Ouran","OHSHC"],year:2006,genres:["Comedy","Drama","Romance","School"],studio:"Bones",episodes:26,format:"TV",rating:8.2,popularity:149},
+  {id:"maid-sama",title:"Maid Sama!",aliases:["Kaichou wa Maid-sama","Maid Sama"],year:2010,genres:["Comedy","Drama","Romance","School"],studio:"J.C. Staff",episodes:26,format:"TV",rating:8.0,popularity:150},
+  {id:"snow-white",title:"Snow White with the Red Hair",aliases:["Akagami no Shirayukihime"],year:2015,genres:["Fantasy","Romance","Slice of Life"],studio:"Bones",episodes:12,format:"TV",rating:8.1,popularity:151},
+  {id:"yona-dawn",title:"Yona of the Dawn",aliases:["Akatsuki no Yona"],year:2014,genres:["Action","Adventure","Fantasy","Historical","Romance"],studio:"Pierrot",episodes:24,format:"TV",rating:8.1,popularity:152},
+  {id:"kamisama-kiss",title:"Kamisama Kiss",aliases:["Kamisama Hajimemashita"],year:2012,genres:["Comedy","Fantasy","Romance","Supernatural"],studio:"TMS Entertainment",episodes:13,format:"TV",rating:8.1,popularity:153},
+  {id:"nana",title:"Nana",aliases:[],year:2006,genres:["Comedy","Drama","Music","Romance"],studio:"Madhouse",episodes:47,format:"TV",rating:8.5,popularity:154},
+  {id:"banana-fish",title:"Banana Fish",aliases:[],year:2018,genres:["Action","Drama","Romance","Tragedy"],studio:"MAPPA",episodes:24,format:"TV",rating:8.5,popularity:155},
+  {id:"lovely-complex",title:"Lovely Complex",aliases:["Love Com","LoveCom"],year:2007,genres:["Comedy","Romance","School"],studio:"Toei Animation",episodes:24,format:"TV",rating:8.0,popularity:156},
+  {id:"given",title:"Given",aliases:[],year:2019,genres:["Drama","Music","Romance","School"],studio:"Lerche",episodes:11,format:"TV",rating:8.4,popularity:157},
+  {id:"madoka-magica",title:"Puella Magi Madoka Magica",aliases:["Madoka","PMMM","Mahou Shoujo Madoka"],year:2011,genres:["Drama","Fantasy","Magical Girl","Psychological","Thriller"],studio:"Shaft",episodes:12,format:"TV",rating:8.6,popularity:158},
+  {id:"little-witch-academia",title:"Little Witch Academia",aliases:["LWA"],year:2017,genres:["Adventure","Comedy","Fantasy","Magic","School"],studio:"Trigger",episodes:25,format:"TV",rating:7.9,popularity:159},
+  {id:"beastars",title:"Beastars",aliases:[],year:2019,genres:["Drama","Psychological","Romance","Slice of Life"],studio:"Orange",episodes:12,format:"TV",rating:8.0,popularity:160},
+  {id:"welcome-nhk",title:"Welcome to the N.H.K.",aliases:["NHK ni Youkoso","NHK"],year:2006,genres:["Comedy","Drama","Psychological","Romance"],studio:"Gonzo",episodes:24,format:"TV",rating:8.2,popularity:161},
+  {id:"great-pretender",title:"Great Pretender",aliases:[],year:2020,genres:["Action","Adventure","Comedy","Crime"],studio:"Wit Studio",episodes:23,format:"ONA",rating:8.2,popularity:162},
+  {id:"dorohedoro",title:"Dorohedoro",aliases:[],year:2020,genres:["Action","Comedy","Dark Fantasy","Fantasy","Horror"],studio:"MAPPA",episodes:12,format:"TV",rating:8.3,popularity:165},
+  {id:"akame-ga-kill",title:"Akame ga Kill!",aliases:["Akame ga Kill","AgK"],year:2014,genres:["Action","Adventure","Drama","Fantasy"],studio:"White Fox",episodes:24,format:"TV",rating:7.5,popularity:166},
+  {id:"noragami",title:"Noragami",aliases:["Noragami Aragoto"],year:2014,genres:["Action","Adventure","Supernatural"],studio:"Bones",episodes:12,format:"TV",rating:8.0,popularity:167},
+  {id:"soul-eater",title:"Soul Eater",aliases:[],year:2008,genres:["Action","Adventure","Comedy","Fantasy","Supernatural"],studio:"Bones",episodes:51,format:"TV",rating:8.0,popularity:168},
+  {id:"fire-force",title:"Fire Force",aliases:["Enen no Shouboutai"],year:2019,genres:["Action","Fantasy","Supernatural"],studio:"David Production",episodes:24,format:"TV",rating:7.8,popularity:169},
+  {id:"blue-exorcist",title:"Blue Exorcist",aliases:["Ao no Exorcist","AoEx"],year:2011,genres:["Action","Fantasy","Supernatural"],studio:"A-1 Pictures",episodes:25,format:"TV",rating:7.6,popularity:170},
+  {id:"d-gray-man",title:"D.Gray-man",aliases:["D Gray Man","DGM"],year:2006,genres:["Action","Adventure","Fantasy","Supernatural"],studio:"TMS Entertainment",episodes:103,format:"TV",rating:8.0,popularity:173},
+  {id:"bakuman",title:"Bakuman.",aliases:["Bakuman"],year:2010,genres:["Drama","Romance","Slice of Life"],studio:"J.C. Staff",episodes:25,format:"TV",rating:8.4,popularity:174},
+  {id:"spirited-away",title:"Spirited Away",aliases:["Sen to Chihiro","Chihiro"],year:2001,genres:["Adventure","Drama","Fantasy","Supernatural"],studio:"Studio Ghibli",episodes:1,format:"Movie",rating:9.0,popularity:175},
+  {id:"princess-mononoke",title:"Princess Mononoke",aliases:["Mononoke Hime"],year:1997,genres:["Action","Adventure","Fantasy"],studio:"Studio Ghibli",episodes:1,format:"Movie",rating:8.7,popularity:176},
+  {id:"howls-moving-castle",title:"Howl's Moving Castle",aliases:["Hauru no Ugoku Shiro","Howls Castle"],year:2004,genres:["Adventure","Drama","Fantasy","Romance"],studio:"Studio Ghibli",episodes:1,format:"Movie",rating:8.7,popularity:177},
+  {id:"my-neighbor-totoro",title:"My Neighbor Totoro",aliases:["Tonari no Totoro","Totoro"],year:1988,genres:["Adventure","Family","Fantasy","Slice of Life"],studio:"Studio Ghibli",episodes:1,format:"Movie",rating:8.3,popularity:178},
+  {id:"castle-sky",title:"Castle in the Sky",aliases:["Laputa","Tenkuu no Shiro Laputa"],year:1986,genres:["Action","Adventure","Fantasy","Romance","Sci-Fi"],studio:"Studio Ghibli",episodes:1,format:"Movie",rating:8.2,popularity:179},
+  {id:"grave-fireflies",title:"Grave of the Fireflies",aliases:["Hotaru no Haka"],year:1988,genres:["Drama","Historical","War"],studio:"Studio Ghibli",episodes:1,format:"Movie",rating:8.5,popularity:180},
+  {id:"ponyo",title:"Ponyo",aliases:["Gake no Ue no Ponyo"],year:2008,genres:["Adventure","Family","Fantasy"],studio:"Studio Ghibli",episodes:1,format:"Movie",rating:7.8,popularity:181},
+  {id:"wind-rises",title:"The Wind Rises",aliases:["Kaze Tachinu"],year:2013,genres:["Drama","Historical","Romance","War"],studio:"Studio Ghibli",episodes:1,format:"Movie",rating:8.1,popularity:182},
+  {id:"your-name",title:"Your Name.",aliases:["Kimi no Na wa","Your Name"],year:2016,genres:["Adventure","Drama","Romance","Supernatural"],studio:"CoMix Wave Films",episodes:1,format:"Movie",rating:9.0,popularity:183},
+  {id:"weathering-with-you",title:"Weathering with You",aliases:["Tenki no Ko"],year:2019,genres:["Drama","Fantasy","Romance"],studio:"CoMix Wave Films",episodes:1,format:"Movie",rating:8.5,popularity:184},
+  {id:"suzume",title:"Suzume",aliases:["Suzume no Tojimari"],year:2022,genres:["Adventure","Drama","Fantasy","Romance"],studio:"CoMix Wave Films",episodes:1,format:"Movie",rating:8.6,popularity:185},
+  {id:"a-silent-voice",title:"A Silent Voice",aliases:["Koe no Katachi","Shape of Voice"],year:2016,genres:["Drama","Romance","School"],studio:"Kyoto Animation",episodes:1,format:"Movie",rating:8.9,popularity:186},
+  {id:"5-centimeters",title:"5 Centimeters per Second",aliases:["Byousoku 5 Centimeter","5cm per Second"],year:2007,genres:["Drama","Romance","Slice of Life"],studio:"CoMix Wave Films",episodes:3,format:"Movie",rating:7.8,popularity:187},
+  {id:"perfect-blue",title:"Perfect Blue",aliases:[],year:1997,genres:["Drama","Horror","Mystery","Psychological","Thriller"],studio:"Madhouse",episodes:1,format:"Movie",rating:8.6,popularity:188},
+  {id:"paprika",title:"Paprika",aliases:[],year:2006,genres:["Action","Mystery","Psychological","Sci-Fi","Supernatural"],studio:"Madhouse",episodes:1,format:"Movie",rating:8.1,popularity:189},
+  {id:"akira",title:"Akira",aliases:[],year:1988,genres:["Action","Adventure","Horror","Sci-Fi","Supernatural"],studio:"TMS Entertainment",episodes:1,format:"Movie",rating:8.2,popularity:190},
+  {id:"ghost-in-shell",title:"Ghost in the Shell",aliases:["GitS","Koukaku Kidoutai"],year:1995,genres:["Action","Detective","Mecha","Psychological","Sci-Fi"],studio:"Production I.G",episodes:1,format:"Movie",rating:8.3,popularity:191},
+  {id:"wolf-children",title:"Wolf Children",aliases:["Ookami Kodomo no Ame to Yuki"],year:2012,genres:["Drama","Family","Fantasy","Slice of Life"],studio:"Madhouse",episodes:1,format:"Movie",rating:8.5,popularity:192},
+  {id:"girl-leapt-time",title:"The Girl Who Leapt Through Time",aliases:["Toki wo Kakeru Shoujo","Girl Who Leapt"],year:2006,genres:["Drama","Romance","Sci-Fi"],studio:"Madhouse",episodes:1,format:"Movie",rating:8.1,popularity:193},
+  {id:"summer-wars",title:"Summer Wars",aliases:[],year:2009,genres:["Action","Drama","Family","Romance","Sci-Fi"],studio:"Madhouse",episodes:1,format:"Movie",rating:7.9,popularity:194},
+  {id:"i-want-pancreas",title:"I Want to Eat Your Pancreas",aliases:["Kimi no Suizou wo Tabetai","Pancreas"],year:2018,genres:["Drama","Romance","School"],studio:"Studio VOLN",episodes:1,format:"Movie",rating:8.5,popularity:195},
+  {id:"garden-words",title:"The Garden of Words",aliases:["Kotonoha no Niwa"],year:2013,genres:["Drama","Romance","Slice of Life"],studio:"CoMix Wave Films",episodes:1,format:"Movie",rating:7.9,popularity:196},
+  {id:"belle",title:"Belle",aliases:["Ryu to Sobakasu no Hime"],year:2021,genres:["Adventure","Drama","Music","Romance","Sci-Fi"],studio:"Studio Chizu",episodes:1,format:"Movie",rating:7.9,popularity:197},
+  {id:"redline",title:"Redline",aliases:[],year:2009,genres:["Action","Sci-Fi","Sports"],studio:"Madhouse",episodes:1,format:"Movie",rating:7.9,popularity:198},
+  {id:"cyberpunk-edgerunners",title:"Cyberpunk: Edgerunners",aliases:["Edgerunners","Cyberpunk Edgerunners"],year:2022,genres:["Action","Drama","Sci-Fi"],studio:"Trigger",episodes:10,format:"ONA",rating:8.9,popularity:199},
+  {id:"pokemon",title:"Pokémon",aliases:["Pokemon","Pokemon Indigo League"],year:1997,genres:["Adventure","Comedy","Fantasy","Kids"],studio:"OLM",episodes:276,format:"TV",rating:7.5,popularity:201},
+  {id:"digimon",title:"Digimon Adventure",aliases:["Digimon","Digital Monsters"],year:1999,genres:["Action","Adventure","Comedy","Fantasy","Kids"],studio:"Toei Animation",episodes:54,format:"TV",rating:7.9,popularity:202},
+  {id:"doraemon",title:"Doraemon",aliases:["Doraemon 1979"],year:1979,genres:["Adventure","Comedy","Family","Fantasy","Kids","Sci-Fi"],studio:"Shin-Ei Animation",episodes:1787,format:"TV",rating:7.8,popularity:203},
+  {id:"shinchan",title:"Crayon Shin-chan",aliases:["Shin-chan","Shinchan"],year:1992,genres:["Comedy","Family","School","Slice of Life"],studio:"Shin-Ei Animation",episodes:1000,format:"TV",rating:7.6,popularity:204},
+  {id:"yugioh",title:"Yu-Gi-Oh! Duel Monsters",aliases:["Yugioh","Yu-Gi-Oh!","YGO"],year:2000,genres:["Action","Adventure","Fantasy","Game"],studio:"Gallop",episodes:224,format:"TV",rating:7.5,popularity:207},
+  {id:"call-night",title:"Call of the Night",aliases:["Yofukashi no Uta"],year:2022,genres:["Mystery","Romance","Supernatural","Vampire"],studio:"Liden Films",episodes:13,format:"TV",rating:8.0,popularity:209},
+  {id:"insomniacs",title:"Insomniacs After School",aliases:["Kimi wa Houkago Insomnia"],year:2023,genres:["Drama","Romance","School","Slice of Life"],studio:"Liden Films",episodes:13,format:"TV",rating:8.2,popularity:210},
+  {id:"skip-loafer",title:"Skip and Loafer",aliases:["Skip to Loafer"],year:2023,genres:["Comedy","Romance","School","Slice of Life"],studio:"P.A. Works",episodes:12,format:"TV",rating:8.2,popularity:211},
+  {id:"pluto",title:"Pluto",aliases:[],year:2023,genres:["Drama","Mystery","Psychological","Sci-Fi"],studio:"Studio M2",episodes:8,format:"ONA",rating:8.7,popularity:214},
+  {id:"spice-wolf",title:"Spice and Wolf",aliases:["Ookami to Koushinryou","Holo"],year:2008,genres:["Adventure","Fantasy","Historical","Romance"],studio:"Imagin",episodes:13,format:"TV",rating:8.3,popularity:247},
+  {id:"oregairu",title:"My Teen Romantic Comedy SNAFU",aliases:["Oregairu","Yahari Ore no Seishun","SNAFU"],year:2013,genres:["Comedy","Drama","Romance","School","Slice of Life"],studio:"Brain's Base",episodes:13,format:"TV",rating:8.1,popularity:242},
+  {id:"shirobako",title:"Shirobako",aliases:[],year:2014,genres:["Comedy","Drama","Slice of Life"],studio:"P.A. Works",episodes:24,format:"TV",rating:8.3,popularity:240},
+  {id:"mushishi",title:"Mushishi",aliases:["Mushi-Shi"],year:2005,genres:["Adventure","Fantasy","Historical","Mystery","Slice of Life","Supernatural"],studio:"Artland",episodes:26,format:"TV",rating:8.7,popularity:233},
+  {id:"yuru-camp",title:"Laid-Back Camp",aliases:["Yuru Camp"],year:2018,genres:["Comedy","School","Slice of Life"],studio:"C-Station",episodes:13,format:"TV",rating:8.3,popularity:236},
+  {id:"kakegurui",title:"Kakegurui",aliases:["Kakegurui Compulsive Gambler"],year:2017,genres:["Drama","Game","Psychological","School"],studio:"MAPPA",episodes:12,format:"TV",rating:7.7,popularity:237},
+  {id:"non-non-biyori",title:"Non Non Biyori",aliases:["NNB"],year:2013,genres:["Comedy","School","Slice of Life"],studio:"Silver Link",episodes:12,format:"TV",rating:8.1,popularity:235},
+  {id:"aot-final",title:"Attack on Titan: The Final Season",aliases:["AoT Final","SnK Final Season","AoT Season 4"],year:2020,genres:["Action","Drama","Fantasy","Horror"],studio:"MAPPA",episodes:16,format:"TV",rating:9.0,popularity:218},
+  {id:"bleach-tybw",title:"Bleach: Thousand-Year Blood War",aliases:["Bleach TYBW","TYBW"],year:2022,genres:["Action","Adventure","Fantasy","Supernatural"],studio:"Pierrot",episodes:13,format:"TV",rating:9.1,popularity:221},
+  {id:"mob-psycho-s3",title:"Mob Psycho 100 III",aliases:["Mob Psycho S3","MP100 III"],year:2022,genres:["Action","Comedy","Psychological","Supernatural"],studio:"Bones",episodes:12,format:"TV",rating:9.0,popularity:224},
+  {id:"jjk-s2",title:"Jujutsu Kaisen Season 2",aliases:["JJK S2","JJK Season 2"],year:2023,genres:["Action","Fantasy","School","Supernatural"],studio:"MAPPA",episodes:23,format:"TV",rating:8.9,popularity:220},
+  {id:"demon-slayer-ed",title:"Demon Slayer: Entertainment District Arc",aliases:["Kimetsu Entertainment District","Yuukaku-hen"],year:2021,genres:["Action","Fantasy","Historical"],studio:"ufotable",episodes:11,format:"TV",rating:9.0,popularity:219},
+  {id:"rezero-s2",title:"Re:Zero Season 2",aliases:["ReZero S2"],year:2020,genres:["Drama","Fantasy","Psychological","Thriller"],studio:"White Fox",episodes:13,format:"TV",rating:8.5,popularity:250},
+  {id:"konosuba-s2",title:"KonoSuba Season 2",aliases:["Konosuba S2"],year:2017,genres:["Adventure","Comedy","Fantasy","Parody"],studio:"Studio Deen",episodes:10,format:"TV",rating:8.3,popularity:252},
+  {id:"golden-kamuy",title:"Golden Kamuy",aliases:["Gouden Kamui"],year:2018,genres:["Action","Adventure","Historical","Survival"],studio:"Geno Studio",episodes:12,format:"TV",rating:8.2,popularity:232},
+  {id:"prison-school",title:"Prison School",aliases:["Kangoku Gakuen"],year:2015,genres:["Comedy","Ecchi","School"],studio:"J.C. Staff",episodes:12,format:"TV",rating:7.8,popularity:172},
+  {id:"barakamon",title:"Barakamon",aliases:[],year:2014,genres:["Comedy","Slice of Life"],studio:"Kinema Citrus",episodes:12,format:"TV",rating:8.3,popularity:234},
+  {id:"violet-evergarden-movie",title:"Violet Evergarden: The Movie",aliases:["VE Movie"],year:2020,genres:["Drama","Fantasy","Slice of Life"],studio:"Kyoto Animation",episodes:1,format:"Movie",rating:8.9,popularity:246},
+  {id:"hxh-1999",title:"Hunter x Hunter (1999)",aliases:["HxH 1999","Hunter Hunter 1999"],year:1999,genres:["Action","Adventure","Fantasy"],studio:"Nippon Animation",episodes:62,format:"TV",rating:8.4,popularity:227},
+  {id:"yowamushi-pedal",title:"Yowamushi Pedal",aliases:["Yowapeda"],year:2013,genres:["Comedy","Drama","School","Sports"],studio:"TMS Entertainment",episodes:38,format:"TV",rating:7.9,popularity:228},
+  {id:"major",title:"Major",aliases:["Baseball Anime"],year:2004,genres:["Drama","School","Sports"],studio:"SynergySP",episodes:26,format:"TV",rating:8.3,popularity:230},
+];
+
+// ──────────────────────────────────────────────────────────────────────────
+// HELPERS
+// ──────────────────────────────────────────────────────────────────────────
+function avatarColor(id) {
+  const COLORS = ['#6366f1','#8b5cf6','#a855f7','#ec4899','#f43f5e','#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#06b6d4','#3b82f6'];
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) & 0xffffffff;
+  return COLORS[Math.abs(h) % COLORS.length];
+}
+
+function avatarLetter(title) {
+  return title.replace(/^(The|A|An) /i, '').charAt(0).toUpperCase();
+}
+
+function dayNumber() {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  return Math.floor((now - START_DATE) / 86400000);
+}
+
+function getDailyAnime() {
+  const n = dayNumber();
+  return ANIME_DB[n % ANIME_DB.length];
+}
+
+function getRandomAnime(excludeId) {
+  const pool = ANIME_DB.filter(a => a.id !== excludeId);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function compareAnime(g, t) {
+  // Year
+  let yearResult;
+  if (g.year === t.year) yearResult = { state: 'exact', val: g.year, arrow: '' };
+  else yearResult = { state: 'wrong', val: g.year, arrow: g.year < t.year ? '↑' : '↓' };
+
+  // Genre
+  const matched = g.genres.filter(x => t.genres.includes(x));
+  let genreState;
+  if (matched.length === t.genres.length && g.genres.length === t.genres.length) genreState = 'exact';
+  else if (matched.length > 0) genreState = 'partial';
+  else genreState = 'wrong';
+
+  // Studio
+  const studioState = g.studio === t.studio ? 'exact' : 'wrong';
+
+  // Episodes
+  let epState;
+  if (g.episodes === t.episodes) epState = { state: 'exact', val: g.episodes, arrow: '' };
+  else epState = { state: 'wrong', val: g.episodes, arrow: g.episodes < t.episodes ? '↑' : '↓' };
+
+  // Format
+  const formatState = g.format === t.format ? 'exact' : 'wrong';
+
+  // Rating (within 0.3 = green, within 0.8 = yellow)
+  const rDiff = Math.abs(g.rating - t.rating);
+  let ratingState;
+  if (rDiff <= 0.2) ratingState = { state: 'exact', val: g.rating.toFixed(1), arrow: '' };
+  else if (rDiff <= 0.7) ratingState = { state: 'partial', val: g.rating.toFixed(1), arrow: g.rating < t.rating ? '↑' : '↓' };
+  else ratingState = { state: 'wrong', val: g.rating.toFixed(1), arrow: g.rating < t.rating ? '↑' : '↓' };
+
+  return { year: yearResult, genres: { state: genreState, matched, all: g.genres }, studio: studioState, episodes: epState, format: formatState, rating: ratingState };
+}
+
+function shareEmoji(h) {
+  // h is a hints object from compareAnime
+  const map = r => r === 'exact' ? '🟩' : r === 'partial' ? '🟨' : '⬛';
+  return [
+    map(h.year.state),
+    map(h.genres.state),
+    map(h.studio),
+    map(h.episodes.state),
+    map(h.format),
+    map(h.rating.state)
+  ].join('');
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// LOCALSTORAGE
+// ──────────────────────────────────────────────────────────────────────────
+function loadStats() {
+  try { return JSON.parse(localStorage.getItem('aniguess_stats') || 'null') || initStats(); }
+  catch { return initStats(); }
+}
+function initStats() {
+  return { played: 0, wins: 0, streak: 0, maxStreak: 0, dist: Array(MAX_GUESSES).fill(0) };
+}
+function saveStats(s) {
+  localStorage.setItem('aniguess_stats', JSON.stringify(s));
+}
+function loadDailyState() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('aniguess_daily') || 'null');
+    if (raw && raw.day === dayNumber()) return raw;
+    return null;
+  } catch { return null; }
+}
+function saveDailyState(state) {
+  localStorage.setItem('aniguess_daily', JSON.stringify({ ...state, day: dayNumber() }));
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// GAME STATE
+// ──────────────────────────────────────────────────────────────────────────
+let mode = 'daily';
+let target = null;
+let guesses = [];     // array of anime IDs
+let hintRows = [];    // array of hint objects
+let gameOver = false;
+let statsUpdated = false;
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('btn-daily').classList.toggle('active', m === 'daily');
+  document.getElementById('btn-practice').classList.toggle('active', m === 'practice');
+  document.getElementById('mode-label').innerHTML = m === 'daily'
+    ? `Daily #<span id="day-num">${dayNumber()}</span>`
+    : 'Practice Mode';
+  document.getElementById('new-game-btn').style.display = m === 'practice' ? '' : 'none';
+  initGame();
+}
+
+function initGame() {
+  document.getElementById('board').innerHTML = '';
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('error-msg').textContent = '';
+  document.getElementById('search').value = '';
+  document.getElementById('search').disabled = false;
+  document.getElementById('submit-btn').disabled = false;
+
+  guesses = [];
+  hintRows = [];
+  gameOver = false;
+  statsUpdated = false;
+
+  if (mode === 'daily') {
+    target = getDailyAnime();
+    const saved = loadDailyState();
+    if (saved) {
+      guesses = saved.guesses;
+      hintRows = saved.hintRows;
+      gameOver = saved.gameOver;
+      statsUpdated = saved.statsUpdated || false;
+      // Replay all rows
+      for (let i = 0; i < guesses.length; i++) {
+        const anime = ANIME_DB.find(a => a.id === guesses[i]);
+        if (anime) appendRow(anime, hintRows[i]);
+      }
+      if (gameOver) showResult(saved.won);
+    }
+  } else {
+    target = getRandomAnime(null);
+  }
+
+  updateCounter();
+}
+
+function newPractice() {
+  mode = 'practice';
+  target = getRandomAnime(target?.id);
+  document.getElementById('board').innerHTML = '';
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('error-msg').textContent = '';
+  document.getElementById('search').value = '';
+  document.getElementById('search').disabled = false;
+  document.getElementById('submit-btn').disabled = false;
+  guesses = [];
+  hintRows = [];
+  gameOver = false;
+  statsUpdated = false;
+  updateCounter();
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// AUTOCOMPLETE
+// ──────────────────────────────────────────────────────────────────────────
+let acIndex = -1;
+let acMatches = [];
+let selectedAnime = null;
+
+function updateAC(q) {
+  const list = document.getElementById('ac-list');
+  if (!q.trim()) { list.classList.remove('open'); return; }
+  const ql = q.toLowerCase();
+  acMatches = ANIME_DB.filter(a => {
+    if (a.title.toLowerCase().includes(ql)) return true;
+    if (a.aliases.some(al => al.toLowerCase().includes(ql))) return true;
+    return false;
+  }).slice(0, 8);
+  acIndex = -1;
+  if (!acMatches.length) { list.classList.remove('open'); return; }
+  list.innerHTML = acMatches.map((a, i) => {
+    const already = guesses.includes(a.id);
+    return `<div class="ac-item${already ? ' guessed' : ''}" data-i="${i}">
+      <div class="ac-avatar" style="background:${avatarColor(a.id)}">${avatarLetter(a.title)}</div>
+      <span class="ac-title">${a.title}</span>
+      <span class="ac-year">${a.year}</span>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.ac-item').forEach(el => {
+    el.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const i = +el.dataset.i;
+      pickAC(i);
+    });
+  });
+  list.classList.add('open');
+}
+
+function pickAC(i) {
+  const a = acMatches[i];
+  if (!a) return;
+  selectedAnime = a;
+  document.getElementById('search').value = a.title;
+  document.getElementById('ac-list').classList.remove('open');
+  document.getElementById('error-msg').textContent = '';
+}
+
+function moveAC(dir) {
+  const list = document.getElementById('ac-list');
+  const items = list.querySelectorAll('.ac-item');
+  if (!items.length) return;
+  items[acIndex]?.classList.remove('focused');
+  acIndex = (acIndex + dir + items.length) % items.length;
+  items[acIndex].classList.add('focused');
+  items[acIndex].scrollIntoView({ block: 'nearest' });
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// GUESSING
+// ──────────────────────────────────────────────────────────────────────────
+function submitGuess() {
+  if (gameOver) return;
+  const errEl = document.getElementById('error-msg');
+  const q = document.getElementById('search').value.trim();
+
+  let anime = selectedAnime;
+  // If no selected from AC, try exact match
+  if (!anime || anime.title.toLowerCase() !== q.toLowerCase()) {
+    anime = ANIME_DB.find(a =>
+      a.title.toLowerCase() === q.toLowerCase() ||
+      a.aliases.some(al => al.toLowerCase() === q.toLowerCase())
+    );
+  }
+  if (!anime) {
+    const match = ANIME_DB.find(a =>
+      a.title.toLowerCase().includes(q.toLowerCase()) ||
+      a.aliases.some(al => al.toLowerCase().includes(q.toLowerCase()))
+    );
+    if (match) anime = match;
+  }
+  if (!anime) { errEl.textContent = 'Anime not found. Try searching from the dropdown.'; return; }
+  if (guesses.includes(anime.id)) { errEl.textContent = `You already guessed "${anime.title}".`; return; }
+
+  errEl.textContent = '';
+  document.getElementById('search').value = '';
+  document.getElementById('ac-list').classList.remove('open');
+  selectedAnime = null;
+
+  const hints = compareAnime(anime, target);
+  guesses.push(anime.id);
+  hintRows.push(hints);
+  appendRow(anime, hints);
+  updateCounter();
+
+  const won = anime.id === target.id;
+  if (won || guesses.length >= MAX_GUESSES) {
+    gameOver = true;
+    document.getElementById('search').disabled = true;
+    document.getElementById('submit-btn').disabled = true;
+    showResult(won);
+    if (mode === 'daily' && !statsUpdated) {
+      updateStats(won, guesses.length);
+      statsUpdated = true;
+    }
+    if (mode === 'daily') {
+      saveDailyState({ guesses, hintRows, gameOver, won, statsUpdated });
+    }
+  } else {
+    if (mode === 'daily') {
+      saveDailyState({ guesses, hintRows, gameOver, won: false, statsUpdated });
+    }
+  }
+}
+
+function updateCounter() {
+  document.getElementById('counter').textContent = guesses.length;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// RENDERING
+// ──────────────────────────────────────────────────────────────────────────
+function appendRow(anime, h) {
+  const board = document.getElementById('board');
+  const row = document.createElement('div');
+  row.className = 'guess-row';
+
+  const isCorrect = anime.id === target.id;
+
+  // Title cell
+  const titleCell = document.createElement('div');
+  titleCell.className = 'cell cell-title ' + (isCorrect ? 'exact' : 'wrong');
+  titleCell.innerHTML = `<div class="anime-name">${anime.title}</div>`;
+
+  // Year
+  const yearCell = makeCell(h.year.state, h.year.val, h.year.arrow);
+  // Genre
+  const genreCell = makeGenreCell(h.genres);
+  // Studio
+  const studioCell = makeCell(h.studio, anime.studio.length > 12 ? anime.studio.slice(0,12)+'…' : anime.studio, '');
+  // Episodes
+  const epCell = makeCell(h.episodes.state, h.episodes.val, h.episodes.arrow);
+  // Format
+  const fmtCell = makeCell(h.format, anime.format, '');
+  // Rating
+  const ratingCell = makeCell(h.rating.state, h.rating.val, h.rating.arrow);
+
+  [titleCell, yearCell, genreCell, studioCell, epCell, fmtCell, ratingCell].forEach(c => row.appendChild(c));
+  board.appendChild(row);
+  row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function makeCell(state, val, arrow) {
+  const el = document.createElement('div');
+  el.className = 'cell ' + state;
+  el.innerHTML = `<span class="val">${val}</span>${arrow ? `<span class="arrow">${arrow}</span>` : ''}`;
+  return el;
+}
+
+function makeGenreCell(g) {
+  const el = document.createElement('div');
+  el.className = 'cell ' + g.state;
+  if (g.state === 'exact') {
+    el.innerHTML = `<span class="genres-list">${g.all.slice(0,3).join(', ')}</span>`;
+  } else if (g.state === 'partial') {
+    const matchedStr = g.matched.slice(0,2).join(', ') || '—';
+    el.innerHTML = `<span class="genres-list">${matchedStr}</span><span class="sub">${g.matched.length} match</span>`;
+  } else {
+    el.innerHTML = `<span class="genres-list" style="font-size:0.7rem">${g.all.slice(0,2).join(', ')}</span><span class="sub">0 match</span>`;
+  }
+  return el;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// RESULT
+// ──────────────────────────────────────────────────────────────────────────
+function showResult(won) {
+  const el = document.getElementById('result');
+  document.getElementById('result-emoji').textContent = won ? '🎉' : '😔';
+  document.getElementById('result-title').textContent = won
+    ? `Solved in ${guesses.length}/${MAX_GUESSES}!`
+    : `Failed in ${guesses.length}/${MAX_GUESSES}`;
+  document.getElementById('result-sub').textContent = won
+    ? (guesses.length === 1 ? 'First try! Legendary.' : `You found it!`)
+    : `The anime was…`;
+
+  const color = avatarColor(target.id);
+  document.getElementById('result-anime').innerHTML = `
+    <div class="result-avatar" style="background:${color}">${avatarLetter(target.title)}</div>
+    <div class="result-info">
+      <div class="anime-title">${target.title}</div>
+      <div class="anime-meta">${target.year} · ${target.studio} · ${target.format} · ${target.episodes} ep · ⭐ ${target.rating}</div>
+    </div>`;
+
+  if (mode === 'practice') {
+    document.getElementById('new-game-btn').style.display = '';
+  }
+  el.classList.add('show');
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// STATS
+// ──────────────────────────────────────────────────────────────────────────
+function updateStats(won, numGuesses) {
+  const s = loadStats();
+  s.played++;
+  if (won) {
+    s.wins++;
+    s.streak++;
+    if (s.streak > s.maxStreak) s.maxStreak = s.streak;
+    if (numGuesses >= 1 && numGuesses <= MAX_GUESSES) s.dist[numGuesses - 1]++;
+  } else {
+    s.streak = 0;
+  }
+  saveStats(s);
+}
+
+function renderStats() {
+  const s = loadStats();
+  document.getElementById('s-played').textContent = s.played;
+  document.getElementById('s-wins').textContent = s.wins;
+  document.getElementById('s-streak').textContent = s.streak;
+  document.getElementById('s-max').textContent = s.maxStreak;
+
+  const maxDist = Math.max(...s.dist, 1);
+  const lastGuess = gameOver && !statsUpdated ? guesses.length : (loadDailyState()?.guesses?.length ?? -1);
+  document.getElementById('dist-bars').innerHTML = s.dist.map((v, i) => {
+    const pct = Math.round((v / maxDist) * 100);
+    const highlight = (i + 1) === lastGuess;
+    return `<div class="dist-row">
+      <div class="dist-num">${i + 1}</div>
+      <div class="dist-bar-wrap"><div class="dist-bar${highlight ? ' highlight' : ''}" style="width:${Math.max(pct, 4)}%">${v}</div></div>
+    </div>`;
+  }).join('');
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// SHARE
+// ──────────────────────────────────────────────────────────────────────────
+function shareResult() {
+  const dn = dayNumber();
+  const won = hintRows.length > 0 && guesses[guesses.length - 1] === target.id;
+  const score = won ? `Solved in ${guesses.length}/${MAX_GUESSES}` : `Failed in ${guesses.length}/${MAX_GUESSES}`;
+  const grid = hintRows.map(h => shareEmoji(h)).join('\n');
+  const text = `AniGuess #${dn}\n${score}\n\n${grid}`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => toast('Result copied to clipboard!')).catch(() => fallbackCopy(text));
+  } else { fallbackCopy(text); }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); toast('Result copied!'); } catch { toast('Copy failed — try manually.'); }
+  document.body.removeChild(ta);
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// MODALS
+// ──────────────────────────────────────────────────────────────────────────
+function openModal(name) {
+  if (name === 'stats') renderStats();
+  document.getElementById(name + '-modal').classList.add('open');
+}
+function closeModal(name) {
+  document.getElementById(name + '-modal').classList.remove('open');
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// EVENTS
+// ──────────────────────────────────────────────────────────────────────────
+const searchEl = document.getElementById('search');
+
+searchEl.addEventListener('input', () => {
+  selectedAnime = null;
+  updateAC(searchEl.value);
+});
+
+searchEl.addEventListener('keydown', e => {
+  const ac = document.getElementById('ac-list');
+  if (e.key === 'ArrowDown') { e.preventDefault(); moveAC(1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); moveAC(-1); }
+  else if (e.key === 'Enter') {
+    if (acIndex >= 0 && ac.classList.contains('open')) {
+      e.preventDefault();
+      pickAC(acIndex);
+    } else {
+      submitGuess();
+    }
+  } else if (e.key === 'Escape') {
+    ac.classList.remove('open');
+  }
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) {
+    document.getElementById('ac-list').classList.remove('open');
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['stats','htp'].forEach(closeModal);
+  }
+});
+
+// Stop modal click-through
+document.querySelectorAll('.modal').forEach(m => {
+  m.addEventListener('click', e => e.stopPropagation());
+});
+
+// ──────────────────────────────────────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────────────────────────────────────
+initGame();
+</script>
+</body>
+</html>
