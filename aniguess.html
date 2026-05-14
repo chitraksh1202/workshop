@@ -8,18 +8,31 @@
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --bg: #080810;
-      --surface: #10101e;
-      --surface2: #161626;
-      --border: #1e1e2e;
-      --text: #e0e0f0;
-      --muted: #44445a;
+      --bg: #07070f;
+      --surface: #0f0f1c;
+      --surface2: #141424;
+      --surface3: #1a1a2e;
+      --border: #1f1f35;
+      --border2: #2a2a44;
+      --text: #e8e8f8;
+      --text2: #a0a0c0;
+      --muted: #3a3a58;
       --accent: #a855f7;
+      --accent-dim: rgba(168,85,247,0.12);
+      --accent-glow: rgba(168,85,247,0.25);
       --green: #22c55e;
-      --yellow: #eab308;
-      --red: #ef4444;
+      --green-dim: rgba(34,197,94,0.13);
+      --green-border: rgba(34,197,94,0.35);
+      --green-glow: rgba(34,197,94,0.2);
+      --yellow: #f59e0b;
+      --yellow-dim: rgba(245,158,11,0.12);
+      --yellow-border: rgba(245,158,11,0.3);
+      --red: #f87171;
+      --radius: 10px;
     }
+
     html { scroll-behavior: smooth; }
+
     body {
       background: var(--bg);
       color: var(--text);
@@ -27,6 +40,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      -webkit-font-smoothing: antialiased;
     }
 
     /* ── HEADER ── */
@@ -34,71 +48,98 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 24px;
-      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
       position: sticky;
       top: 0;
-      background: var(--bg);
       z-index: 100;
+      background: rgba(7,7,15,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
     }
+
+    .back-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .back-link:hover { color: var(--text2); border-color: var(--border2); }
+
     .logo {
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.4rem;
+      font-size: 1.35rem;
       font-weight: 900;
-      color: var(--accent);
       letter-spacing: -0.5px;
       text-decoration: none;
+      background: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #7c3aed 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .logo span { color: var(--text); }
+    .logo span {
+      background: linear-gradient(135deg, #e2e2f2, #a0a0c0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
     .header-center {
       display: flex;
-      gap: 6px;
+      gap: 4px;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 9px;
       padding: 4px;
     }
     .mode-btn {
-      padding: 6px 16px;
+      padding: 6px 18px;
       border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: 600;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
       cursor: pointer;
       border: none;
       background: transparent;
       color: var(--muted);
-      transition: all 0.15s;
+      transition: all 0.18s;
     }
-    .mode-btn.active { background: var(--accent); color: #fff; }
-    .header-right { display: flex; gap: 8px; }
+    .mode-btn.active {
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(168,85,247,0.35);
+    }
+
+    .header-right { display: flex; gap: 6px; }
     .icon-btn {
       width: 36px; height: 36px;
       border-radius: 8px;
       border: 1px solid var(--border);
       background: var(--surface);
-      color: var(--muted);
+      color: var(--text2);
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1rem;
+      font-size: 0.9rem;
       transition: all 0.15s;
+      font-weight: 700;
     }
-    .icon-btn:hover { color: var(--text); border-color: #333; }
-    .back-link {
-      font-size: 0.8rem;
-      color: var(--muted);
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.15s;
-    }
-    .back-link:hover { color: var(--text); }
+    .icon-btn:hover { border-color: var(--border2); background: var(--surface2); color: var(--text); }
 
     /* ── MAIN ── */
     main {
       flex: 1;
-      max-width: 760px;
+      max-width: 800px;
       margin: 0 auto;
       width: 100%;
-      padding: 28px 16px 60px;
+      padding: 24px 16px 64px;
     }
 
     /* ── STATUS BAR ── */
@@ -106,299 +147,479 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
-    .guess-counter {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--muted);
-      letter-spacing: 1px;
+
+    /* Progress dots */
+    .progress-dots {
+      display: flex;
+      gap: 5px;
+      align-items: center;
     }
-    .guess-counter span { color: var(--text); }
+    .pdot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      border: 1px solid var(--border2);
+      transition: all 0.2s;
+    }
+    .pdot.used   { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
+    .pdot.won    { background: var(--green);  border-color: var(--green);  box-shadow: 0 0 6px var(--green-glow); }
+
     .daily-label {
-      font-size: 0.72rem;
-      font-weight: 600;
+      font-size: 0.7rem;
+      font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--accent);
+      opacity: 0.8;
     }
 
     /* ── SEARCH ── */
-    .search-wrap { position: relative; margin-bottom: 24px; }
-    .search-input {
-      width: 100%;
-      padding: 14px 18px;
+    .search-wrap { position: relative; margin-bottom: 20px; }
+
+    .search-inner {
+      display: flex;
+      align-items: center;
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      overflow: visible;
+    }
+    .search-inner:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .search-icon {
+      padding: 0 14px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      flex-shrink: 0;
+      pointer-events: none;
+      user-select: none;
+    }
+    .search-input {
+      flex: 1;
+      padding: 13px 0;
+      background: transparent;
+      border: none;
       color: var(--text);
       font-family: 'Inter', sans-serif;
       font-size: 0.95rem;
       outline: none;
-      transition: border-color 0.15s;
+      min-width: 0;
     }
-    .search-input:focus { border-color: var(--accent); }
     .search-input::placeholder { color: var(--muted); }
-    .search-input:disabled { opacity: 0.4; cursor: not-allowed; }
+    .search-input:disabled { opacity: 0.35; cursor: not-allowed; }
+
     .submit-btn {
-      position: absolute;
-      right: 8px; top: 50%;
-      transform: translateY(-50%);
-      padding: 8px 16px;
-      background: var(--accent);
+      margin: 5px;
+      padding: 9px 20px;
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
       color: #fff;
       border: none;
-      border-radius: 7px;
+      border-radius: 8px;
       font-size: 0.82rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      transition: opacity 0.15s;
+      transition: opacity 0.15s, transform 0.1s;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+      flex-shrink: 0;
     }
-    .submit-btn:hover { opacity: 0.85; }
-    .submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .submit-btn:hover { opacity: 0.88; }
+    .submit-btn:active { transform: scale(0.97); }
+    .submit-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
     .autocomplete {
       position: absolute;
-      top: calc(100% + 6px);
+      top: calc(100% + 8px);
       left: 0; right: 0;
       background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      border: 1px solid var(--border2);
+      border-radius: 12px;
       overflow: hidden;
       z-index: 50;
       display: none;
-      max-height: 240px;
+      max-height: 260px;
       overflow-y: auto;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
     }
-    .autocomplete.open { display: block; }
+    .autocomplete::-webkit-scrollbar { width: 4px; }
+    .autocomplete::-webkit-scrollbar-track { background: transparent; }
+    .autocomplete::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+    .autocomplete.open { display: block; animation: acIn 0.15s ease; }
+    @keyframes acIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+
     .ac-item {
-      padding: 10px 16px;
+      padding: 10px 14px;
       cursor: pointer;
-      font-size: 0.88rem;
+      font-size: 0.87rem;
       display: flex;
       align-items: center;
       gap: 10px;
       transition: background 0.1s;
+      border-bottom: 1px solid var(--border);
     }
-    .ac-item:hover, .ac-item.focused { background: var(--border); }
-    .ac-item.guessed { opacity: 0.4; cursor: default; }
+    .ac-item:last-child { border-bottom: none; }
+    .ac-item:hover, .ac-item.focused { background: var(--surface3); }
+    .ac-item.guessed { opacity: 0.35; cursor: default; pointer-events: none; }
+
     .ac-avatar {
-      width: 28px; height: 28px;
-      border-radius: 6px;
+      width: 32px; height: 32px;
+      border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem;
-      font-weight: 700;
+      font-size: 0.75rem;
+      font-weight: 800;
       color: #fff;
       flex-shrink: 0;
+      letter-spacing: -0.5px;
     }
-    .ac-title { font-weight: 500; }
-    .ac-year { font-size: 0.75rem; color: var(--muted); margin-left: auto; }
+    .ac-title { font-weight: 600; color: var(--text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ac-year { font-size: 0.72rem; color: var(--muted); font-weight: 600; margin-left: auto; flex-shrink: 0; }
+
     .error-msg {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--red);
-      margin-top: 6px;
-      min-height: 18px;
+      margin-top: 7px;
+      min-height: 16px;
+      padding-left: 4px;
     }
 
-    /* ── GUESS BOARD ── */
+    /* ── BOARD COLUMNS ── */
+    --cols: minmax(155px,2.2fr) 68px minmax(110px,1.6fr) 88px 72px 64px 64px;
+
     .board-header {
       display: grid;
-      grid-template-columns: 180px 80px 160px 80px 90px 80px 80px;
-      gap: 6px;
-      margin-bottom: 8px;
-      padding: 0 4px;
+      grid-template-columns: minmax(155px,2.2fr) 68px minmax(110px,1.6fr) 88px 72px 64px 64px;
+      gap: 5px;
+      margin-bottom: 6px;
+      padding: 0 2px;
     }
     .col-label {
-      font-size: 0.65rem;
-      font-weight: 600;
-      letter-spacing: 1px;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 1.2px;
       text-transform: uppercase;
       color: var(--muted);
       text-align: center;
+      padding: 6px 4px;
+      background: var(--surface);
+      border-radius: 7px;
+      border: 1px solid var(--border);
     }
-    .col-label:first-child { text-align: left; padding-left: 8px; }
+    .col-label:first-child { text-align: left; padding-left: 10px; }
+
+    /* ── GUESS ROWS ── */
     .guess-row {
       display: grid;
-      grid-template-columns: 180px 80px 160px 80px 90px 80px 80px;
-      gap: 6px;
-      margin-bottom: 6px;
-      animation: rowIn 0.35s ease;
+      grid-template-columns: minmax(155px,2.2fr) 68px minmax(110px,1.6fr) 88px 72px 64px 64px;
+      gap: 5px;
+      margin-bottom: 5px;
     }
-    @keyframes rowIn {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
+    /* Stagger each cell's entrance */
+    .guess-row .cell:nth-child(1) { animation: cellIn 0.3s ease both; animation-delay: 0.00s; }
+    .guess-row .cell:nth-child(2) { animation: cellIn 0.3s ease both; animation-delay: 0.07s; }
+    .guess-row .cell:nth-child(3) { animation: cellIn 0.3s ease both; animation-delay: 0.14s; }
+    .guess-row .cell:nth-child(4) { animation: cellIn 0.3s ease both; animation-delay: 0.21s; }
+    .guess-row .cell:nth-child(5) { animation: cellIn 0.3s ease both; animation-delay: 0.28s; }
+    .guess-row .cell:nth-child(6) { animation: cellIn 0.3s ease both; animation-delay: 0.35s; }
+    .guess-row .cell:nth-child(7) { animation: cellIn 0.3s ease both; animation-delay: 0.42s; }
+
+    @keyframes cellIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
     }
+
     .cell {
-      border-radius: 8px;
-      padding: 10px 8px;
+      border-radius: var(--radius);
+      padding: 9px 7px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      font-size: 0.78rem;
-      font-weight: 600;
-      min-height: 62px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      min-height: 66px;
       border: 1px solid transparent;
-      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
     }
-    .cell.exact  { background: rgba(34,197,94,0.15);  border-color: rgba(34,197,94,0.3);  color: #4ade80; }
-    .cell.partial{ background: rgba(234,179,8,0.15);  border-color: rgba(234,179,8,0.3);  color: #fbbf24; }
-    .cell.wrong  { background: rgba(30,30,46,0.6);    border-color: var(--border);        color: var(--muted); }
-    .cell-title  { text-align: left; align-items: flex-start; }
+
+    .cell.exact {
+      background: var(--green-dim);
+      border-color: var(--green-border);
+      color: #4ade80;
+      box-shadow: inset 0 1px 0 rgba(74,222,128,0.1), 0 0 12px rgba(34,197,94,0.08);
+    }
+    .cell.partial {
+      background: var(--yellow-dim);
+      border-color: var(--yellow-border);
+      color: #fbbf24;
+    }
+    .cell.wrong {
+      background: rgba(20,20,36,0.7);
+      border-color: var(--border);
+      color: var(--text2);
+    }
+
+    /* Title cell */
+    .cell-title {
+      text-align: left;
+      align-items: flex-start;
+      padding: 10px 10px;
+      border-radius: var(--radius);
+    }
+    .cell-title.exact  { border-left: 3px solid var(--green); }
+    .cell-title.wrong  { border-left: 3px solid var(--border2); }
     .cell-title .anime-name {
-      font-size: 0.82rem;
-      font-weight: 600;
+      font-size: 0.8rem;
+      font-weight: 700;
       color: var(--text);
-      line-height: 1.3;
+      line-height: 1.35;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-    .cell .arrow { font-size: 0.9rem; margin-top: 2px; }
-    .cell .val { font-size: 0.85rem; }
-    .cell .sub { font-size: 0.68rem; opacity: 0.7; margin-top: 2px; }
-    .cell .genres-list { font-size: 0.68rem; line-height: 1.5; }
+    .cell-title.exact .anime-name { color: #86efac; }
 
-    /* ── RESULT SCREEN ── */
+    .cell .arrow {
+      font-size: 0.75rem;
+      margin-top: 2px;
+      opacity: 0.9;
+      font-weight: 800;
+    }
+    .cell .val { font-size: 0.82rem; line-height: 1.2; }
+    .cell .sub { font-size: 0.62rem; opacity: 0.65; margin-top: 3px; font-weight: 600; }
+    .cell .genres-list { font-size: 0.62rem; line-height: 1.55; font-weight: 600; }
+
+    /* ── RESULT CARD ── */
     #result {
       display: none;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 32px 28px;
+      border-radius: 16px;
+      padding: 30px 24px;
       text-align: center;
-      margin-top: 24px;
-      animation: rowIn 0.4s ease;
+      margin-top: 20px;
+      border: 1px solid var(--border2);
+      background: var(--surface);
+      position: relative;
+      overflow: hidden;
     }
-    #result.show { display: block; }
-    .result-emoji { font-size: 2.8rem; margin-bottom: 12px; }
+    #result::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.08) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    #result.show { display: block; animation: resultIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes resultIn {
+      from { opacity: 0; transform: scale(0.94) translateY(12px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .result-emoji { font-size: 3rem; margin-bottom: 10px; filter: drop-shadow(0 0 12px rgba(168,85,247,0.4)); }
     .result-title {
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.5rem;
+      font-size: 1.55rem;
       font-weight: 900;
       margin-bottom: 6px;
+      background: linear-gradient(135deg, #e8e8f8, #a0a0c0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .result-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 20px; }
+    #result.show.win .result-title {
+      background: linear-gradient(135deg, #86efac, #22c55e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .result-sub { color: var(--text2); font-size: 0.88rem; margin-bottom: 20px; }
+
     .result-anime {
       display: flex;
       align-items: center;
-      gap: 16px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px;
+      gap: 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 14px 16px;
       margin-bottom: 20px;
       text-align: left;
+      position: relative;
+      z-index: 1;
     }
     .result-avatar {
-      width: 60px; height: 60px;
+      width: 56px; height: 56px;
       border-radius: 10px;
       flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       font-weight: 900;
       color: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     }
-    .result-info .anime-title { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
-    .result-info .anime-meta { font-size: 0.78rem; color: var(--muted); }
-    .result-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .result-info .anime-title { font-weight: 700; font-size: 0.98rem; margin-bottom: 5px; color: var(--text); }
+    .result-info .anime-meta {
+      font-size: 0.75rem;
+      color: var(--text2);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .meta-tag {
+      background: var(--surface3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--text2);
+    }
+
+    .result-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
+
     .btn {
       padding: 10px 22px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
+      border-radius: 9px;
+      font-size: 0.83rem;
+      font-weight: 700;
       cursor: pointer;
       border: none;
       transition: all 0.15s;
+      letter-spacing: 0.2px;
     }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { opacity: 0.85; }
-    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { border-color: #444; }
+    .btn-primary {
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(168,85,247,0.3);
+    }
+    .btn-primary:hover { opacity: 0.88; box-shadow: 0 4px 20px rgba(168,85,247,0.45); }
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text2);
+      border: 1px solid var(--border2);
+    }
+    .btn-secondary:hover { border-color: var(--muted); color: var(--text); }
 
     /* ── MODALS ── */
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(6px);
       z-index: 200;
       align-items: center;
       justify-content: center;
       padding: 16px;
     }
     .modal-overlay.open { display: flex; }
+
     .modal {
       background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 16px;
+      border: 1px solid var(--border2);
+      border-radius: 18px;
       padding: 28px;
-      max-width: 460px;
+      max-width: 440px;
       width: 100%;
-      max-height: 80vh;
+      max-height: 85vh;
       overflow-y: auto;
       position: relative;
-      animation: rowIn 0.25s ease;
+      animation: modalIn 0.22s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.6);
     }
-    .modal-close {
-      position: absolute;
-      top: 16px; right: 16px;
-      width: 28px; height: 28px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-      font-size: 0.9rem;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .modal-close:hover { color: var(--text); }
-    .modal-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 20px;
+    .modal::-webkit-scrollbar { width: 4px; }
+    .modal::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.93) translateY(8px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
     }
 
-    /* Stats modal */
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 14px;
+      width: 30px; height: 30px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.8rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .modal-close:hover { color: var(--text); border-color: var(--border2); }
+
+    .modal-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      margin-bottom: 22px;
+      color: var(--text);
+    }
+
+    /* Stats */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 8px;
+      margin-bottom: 22px;
     }
     .stat-box {
-      background: var(--bg);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 8px;
+      border-radius: 10px;
+      padding: 14px 8px;
       text-align: center;
     }
-    .stat-val { font-size: 1.8rem; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
-    .stat-label { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+    .stat-val {
+      font-size: 2rem;
+      font-weight: 900;
+      font-family: 'Space Grotesk', sans-serif;
+      background: linear-gradient(135deg, #c084fc, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+    .stat-label { font-size: 0.62rem; color: var(--muted); margin-top: 5px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+
+    .dist-section-label {
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
     .dist-row {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
       font-size: 0.8rem;
     }
-    .dist-num { width: 16px; text-align: right; color: var(--muted); }
-    .dist-bar-wrap { flex: 1; background: var(--border); border-radius: 4px; height: 22px; overflow: hidden; }
+    .dist-num { width: 14px; text-align: right; color: var(--muted); font-weight: 700; font-size: 0.72rem; }
+    .dist-bar-wrap { flex: 1; background: var(--surface); border-radius: 5px; height: 24px; overflow: hidden; border: 1px solid var(--border); }
     .dist-bar {
       height: 100%;
-      background: var(--accent);
-      border-radius: 4px;
+      background: linear-gradient(90deg, #7c3aed, #a855f7);
+      border-radius: 5px;
       display: flex; align-items: center; justify-content: flex-end;
       padding-right: 8px;
-      font-size: 0.72rem;
-      font-weight: 600;
+      font-size: 0.7rem;
+      font-weight: 700;
       color: #fff;
-      min-width: 24px;
-      transition: width 0.5s ease;
+      min-width: 26px;
+      transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
     }
-    .dist-bar.highlight { background: var(--green); }
+    .dist-bar.highlight { background: linear-gradient(90deg, #16a34a, #22c55e); }
 
     /* How to play */
     .htp-row {
@@ -406,76 +627,92 @@
       gap: 12px;
       margin-bottom: 14px;
       font-size: 0.85rem;
-      line-height: 1.5;
+      line-height: 1.55;
+      color: var(--text2);
     }
-    .htp-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .htp-row strong { color: var(--text); }
+    .htp-icon { font-size: 1.15rem; flex-shrink: 0; margin-top: 1px; }
     .hint-legend {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
-      margin-top: 16px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
     }
     .legend-item {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
       font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text2);
     }
     .legend-dot {
-      width: 16px; height: 16px;
-      border-radius: 4px;
+      width: 18px; height: 18px;
+      border-radius: 5px;
     }
-    .legend-dot.green  { background: rgba(34,197,94,0.4); border: 1px solid rgba(34,197,94,0.5); }
-    .legend-dot.yellow { background: rgba(234,179,8,0.4); border: 1px solid rgba(234,179,8,0.5); }
-    .legend-dot.grey   { background: rgba(30,30,46,0.8); border: 1px solid var(--border); }
+    .legend-dot.green  { background: var(--green-dim); border: 1px solid var(--green-border); }
+    .legend-dot.yellow { background: var(--yellow-dim); border: 1px solid var(--yellow-border); }
+    .legend-dot.grey   { background: rgba(20,20,36,0.8); border: 1px solid var(--border2); }
 
     /* ── TOAST ── */
     #toast {
       position: fixed;
-      bottom: 24px;
+      bottom: 28px;
       left: 50%;
       transform: translateX(-50%) translateY(80px);
-      background: #fff;
+      background: #f1f1f8;
       color: #111;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
+      padding: 11px 22px;
+      border-radius: 10px;
+      font-size: 0.84rem;
+      font-weight: 700;
       z-index: 300;
-      transition: transform 0.3s ease;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
       white-space: nowrap;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
     }
     #toast.show { transform: translateX(-50%) translateY(0); }
 
     /* ── FOOTER ── */
     footer {
       text-align: center;
-      padding: 16px;
-      font-size: 0.72rem;
+      padding: 14px;
+      font-size: 0.7rem;
       color: var(--muted);
       border-top: 1px solid var(--border);
+      letter-spacing: 0.5px;
     }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 700px) {
+    @media (max-width: 720px) {
       .board-header, .guess-row {
-        grid-template-columns: 1fr 56px 1fr 56px 72px 60px 60px;
+        grid-template-columns: minmax(120px,2fr) 58px minmax(90px,1.4fr) 72px 60px 54px 56px;
+        gap: 4px;
       }
-      .cell { padding: 8px 4px; min-height: 56px; font-size: 0.72rem; }
-      .cell-title .anime-name { font-size: 0.75rem; }
-      main { padding: 20px 10px 50px; }
+      .cell { min-height: 58px; padding: 7px 5px; font-size: 0.7rem; }
+      .cell-title .anime-name { font-size: 0.74rem; }
+      main { padding: 18px 10px 50px; }
+      .logo { font-size: 1.15rem; }
     }
-    @media (max-width: 500px) {
+    @media (max-width: 520px) {
       .board-header { display: none; }
-      .guess-row { grid-template-columns: 1fr; gap: 4px; }
-      .cell { flex-direction: row; justify-content: flex-start; gap: 8px; min-height: 40px; }
+      .guess-row {
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 4px;
+      }
+      .cell:first-child { grid-column: 1 / -1; }
+      header { padding: 10px 14px; }
+      .back-link span { display: none; }
     }
   </style>
 </head>
 <body>
 
 <header>
-  <a href="game.html" class="back-link">← Games</a>
+  <a href="game.html" class="back-link">← <span>Games</span></a>
   <a class="logo">Ani<span>Guess</span></a>
   <div class="header-center">
     <button class="mode-btn active" id="btn-daily" onclick="setMode('daily')">Daily</button>
@@ -483,31 +720,34 @@
   </div>
   <div class="header-right">
     <button class="icon-btn" onclick="openModal('htp')" title="How to play">?</button>
-    <button class="icon-btn" onclick="openModal('stats')" title="Stats">📊</button>
+    <button class="icon-btn" onclick="openModal('stats')" title="Stats">▦</button>
   </div>
 </header>
 
 <main>
   <div class="status-bar">
-    <div class="guess-counter">Guesses: <span id="counter">0</span>/10</div>
+    <div class="progress-dots" id="progress-dots"></div>
     <div class="daily-label" id="mode-label">Daily #<span id="day-num">1</span></div>
   </div>
 
   <div class="search-wrap">
-    <input type="text" class="search-input" id="search" placeholder="Search anime title…" autocomplete="off" spellcheck="false">
-    <button class="submit-btn" id="submit-btn" onclick="submitGuess()">Guess</button>
+    <div class="search-inner">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" id="search" placeholder="Search for an anime…" autocomplete="off" spellcheck="false">
+      <button class="submit-btn" id="submit-btn" onclick="submitGuess()">Guess →</button>
+    </div>
     <div class="autocomplete" id="ac-list"></div>
     <div class="error-msg" id="error-msg"></div>
   </div>
 
   <div class="board-header">
-    <div class="col-label">Anime</div>
-    <div class="col-label">Year</div>
-    <div class="col-label">Genre</div>
-    <div class="col-label">Studio</div>
-    <div class="col-label">Episodes</div>
-    <div class="col-label">Format</div>
-    <div class="col-label">Rating</div>
+    <div class="col-label">🎌 Anime</div>
+    <div class="col-label">📅 Year</div>
+    <div class="col-label">🎭 Genre</div>
+    <div class="col-label">🎬 Studio</div>
+    <div class="col-label">📺 Episodes</div>
+    <div class="col-label">📽 Format</div>
+    <div class="col-label">⭐ Rating</div>
   </div>
   <div id="board"></div>
 
@@ -517,9 +757,9 @@
     <div class="result-sub" id="result-sub"></div>
     <div class="result-anime" id="result-anime"></div>
     <div class="result-actions">
-      <button class="btn btn-primary" onclick="shareResult()">Share Result</button>
-      <button class="btn btn-secondary" id="new-game-btn" onclick="newPractice()" style="display:none">New Game</button>
-      <button class="btn btn-secondary" onclick="openModal('stats')">Stats</button>
+      <button class="btn btn-primary" onclick="shareResult()">📤 Share</button>
+      <button class="btn btn-secondary" id="new-game-btn" onclick="newPractice()" style="display:none">↺ New Game</button>
+      <button class="btn btn-secondary" onclick="openModal('stats')">▦ Stats</button>
     </div>
   </div>
 </main>
@@ -535,7 +775,7 @@
       <div class="stat-box"><div class="stat-val" id="s-streak">0</div><div class="stat-label">Streak</div></div>
       <div class="stat-box"><div class="stat-val" id="s-max">0</div><div class="stat-label">Best</div></div>
     </div>
-    <div style="font-size:0.75rem;color:var(--muted);margin-bottom:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase">Guess Distribution</div>
+    <div class="dist-section-label">Guess Distribution</div>
     <div id="dist-bars"></div>
   </div>
 </div>
@@ -546,21 +786,21 @@
     <button class="modal-close" onclick="closeModal('htp')">✕</button>
     <div class="modal-title">How to Play</div>
     <div class="htp-row"><div class="htp-icon">🎯</div><div>Guess the hidden anime in <strong>10 tries</strong>. A new anime drops every day in Daily mode.</div></div>
-    <div class="htp-row"><div class="htp-icon">🔍</div><div>Type an anime name and pick from the autocomplete. Each guess reveals comparison hints.</div></div>
-    <div class="htp-row"><div class="htp-icon">📅</div><div><strong>Year / Episodes / Rating</strong> — arrows show if the target is higher ↑ or lower ↓.</div></div>
-    <div class="htp-row"><div class="htp-icon">🎭</div><div><strong>Genre</strong> — green if all match, yellow if some match, grey if none.</div></div>
-    <div class="htp-row"><div class="htp-icon">🏠</div><div><strong>Studio</strong> and <strong>Format</strong> — green if exact match, grey otherwise.</div></div>
+    <div class="htp-row"><div class="htp-icon">🔍</div><div>Type an anime name and select from the autocomplete dropdown, then hit <strong>Guess</strong>.</div></div>
+    <div class="htp-row"><div class="htp-icon">📅</div><div><strong>Year / Episodes / Rating</strong> — arrows show if the target is <strong>higher ↑</strong> or <strong>lower ↓</strong>.</div></div>
+    <div class="htp-row"><div class="htp-icon">🎭</div><div><strong>Genre</strong> — green if all genres match, yellow if some overlap, grey if none.</div></div>
+    <div class="htp-row"><div class="htp-icon">🎬</div><div><strong>Studio</strong> and <strong>Format</strong> — green for exact match, grey if wrong.</div></div>
     <div class="hint-legend">
-      <div class="legend-item"><div class="legend-dot green"></div> Exact match</div>
-      <div class="legend-item"><div class="legend-dot yellow"></div> Partial match</div>
-      <div class="legend-item"><div class="legend-dot grey"></div> No match / Wrong</div>
+      <div class="legend-item"><div class="legend-dot green"></div>Exact match</div>
+      <div class="legend-item"><div class="legend-dot yellow"></div>Partial match</div>
+      <div class="legend-item"><div class="legend-dot grey"></div>No match</div>
     </div>
   </div>
 </div>
 
 <div id="toast"></div>
 
-<footer>AniGuess · 250+ anime · Daily &amp; Practice modes</footer>
+<footer>AniGuess &nbsp;·&nbsp; 255 anime &nbsp;·&nbsp; Daily &amp; Practice modes</footer>
 
 <script>
 // ──────────────────────────────────────────────────────────────────────────
@@ -1084,7 +1324,12 @@ function submitGuess() {
 }
 
 function updateCounter() {
-  document.getElementById('counter').textContent = guesses.length;
+  const dots = document.getElementById('progress-dots');
+  dots.innerHTML = Array.from({length: MAX_GUESSES}, (_, i) => {
+    const won = gameOver && i === guesses.length - 1 && guesses[i] === target?.id;
+    const used = i < guesses.length;
+    return `<div class="pdot${won ? ' won' : used ? ' used' : ''}"></div>`;
+  }).join('');
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -1146,26 +1391,36 @@ function makeGenreCell(g) {
 // ──────────────────────────────────────────────────────────────────────────
 function showResult(won) {
   const el = document.getElementById('result');
+  el.classList.remove('win');
   document.getElementById('result-emoji').textContent = won ? '🎉' : '😔';
   document.getElementById('result-title').textContent = won
     ? `Solved in ${guesses.length}/${MAX_GUESSES}!`
     : `Failed in ${guesses.length}/${MAX_GUESSES}`;
   document.getElementById('result-sub').textContent = won
-    ? (guesses.length === 1 ? 'First try! Legendary.' : `You found it!`)
-    : `The anime was…`;
+    ? (guesses.length === 1 ? 'First try! Absolutely legendary.' : guesses.length <= 3 ? 'Impressive — you nailed it!' : 'You found it!')
+    : 'The answer was…';
 
   const color = avatarColor(target.id);
+  const genres = target.genres.slice(0,3).map(g => `<span class="meta-tag">${g}</span>`).join('');
   document.getElementById('result-anime').innerHTML = `
     <div class="result-avatar" style="background:${color}">${avatarLetter(target.title)}</div>
     <div class="result-info">
       <div class="anime-title">${target.title}</div>
-      <div class="anime-meta">${target.year} · ${target.studio} · ${target.format} · ${target.episodes} ep · ⭐ ${target.rating}</div>
+      <div class="anime-meta">
+        <span class="meta-tag">${target.year}</span>
+        <span class="meta-tag">${target.studio}</span>
+        <span class="meta-tag">${target.format}</span>
+        <span class="meta-tag">${target.episodes} ep</span>
+        <span class="meta-tag">⭐ ${target.rating}</span>
+        ${genres}
+      </div>
     </div>`;
 
   if (mode === 'practice') {
     document.getElementById('new-game-btn').style.display = '';
   }
   el.classList.add('show');
+  if (won) el.classList.add('win');
 }
 
 // ──────────────────────────────────────────────────────────────────────────
