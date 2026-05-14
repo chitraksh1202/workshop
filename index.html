@@ -422,6 +422,106 @@
 
     footer a { color: var(--primary); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
+
+    /* ── EMOJI RATING ── */
+    .rating-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 48px 24px 56px;
+    }
+
+    .rating-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text2);
+      opacity: 0.6;
+      margin-bottom: 4px;
+    }
+
+    .rating-emojis {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .rating-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+      position: relative;
+    }
+
+    .rating-btn .emoji {
+      font-size: 30px;
+      filter: grayscale(1);
+      opacity: 0.4;
+      transition: filter 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+      user-select: none;
+      line-height: 1;
+    }
+
+    .rating-btn:hover .emoji,
+    .rating-btn.active .emoji {
+      filter: grayscale(0);
+      opacity: 1;
+    }
+
+    .rating-btn:hover { transform: scale(1.05); }
+    .rating-btn.active { transform: scale(1.1); }
+
+    .rating-label-wrap {
+      position: relative;
+      height: 28px;
+      width: 128px;
+      margin-top: 4px;
+    }
+
+    .rating-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      transition: opacity 0.3s ease, filter 0.3s ease, transform 0.3s ease;
+      opacity: 0;
+      filter: blur(8px);
+      transform: scale(1.05);
+      pointer-events: none;
+    }
+
+    .rating-label.default {
+      font-weight: 500;
+      color: var(--text2);
+    }
+
+    .rating-label.visible {
+      opacity: 1;
+      filter: blur(0);
+      transform: scale(1);
+    }
+
+    .rating-divider {
+      width: 96px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--border2), transparent);
+      margin-top: 12px;
+    }
   </style>
 </head>
 <body>
@@ -526,6 +626,24 @@
 
   <hr class="divider">
 
+  <div class="rating-section">
+    <p class="rating-eyebrow">How was your experience?</p>
+    <div class="rating-emojis" id="rating-emojis">
+      <button class="rating-btn" data-value="1" data-label="Terrible" aria-label="Rate 1: Terrible"><span class="emoji">😔</span></button>
+      <button class="rating-btn" data-value="2" data-label="Poor"     aria-label="Rate 2: Poor">    <span class="emoji">😕</span></button>
+      <button class="rating-btn" data-value="3" data-label="Okay"     aria-label="Rate 3: Okay">    <span class="emoji">😐</span></button>
+      <button class="rating-btn" data-value="4" data-label="Good"     aria-label="Rate 4: Good">    <span class="emoji">🙂</span></button>
+      <button class="rating-btn" data-value="5" data-label="Amazing"  aria-label="Rate 5: Amazing"> <span class="emoji">😍</span></button>
+    </div>
+    <div class="rating-label-wrap">
+      <span class="rating-label default visible" id="rating-default">Rate us</span>
+      <span class="rating-label" id="rating-text"></span>
+    </div>
+    <div class="rating-divider"></div>
+  </div>
+
+  <hr class="divider">
+
   <footer>
     [ kinetic typography ] &nbsp;&mdash;&nbsp;
     Built by <a href="https://github.com/chitraksh1202/workshop" target="_blank">chitraksh1202</a>
@@ -607,6 +725,35 @@
     document.querySelectorAll('[data-scramble]').forEach(el => {
       instances.push(new TextScramble(el));
     });
+
+    // ── EMOJI RATING ──
+    (function() {
+      const btns = document.querySelectorAll('#rating-emojis .rating-btn');
+      const labelEl = document.getElementById('rating-text');
+      const defaultEl = document.getElementById('rating-default');
+      let selected = 0;
+
+      function update(active) {
+        btns.forEach(btn => {
+          const v = +btn.dataset.value;
+          btn.classList.toggle('active', v <= active);
+        });
+        if (active > 0) {
+          labelEl.textContent = btns[active - 1].dataset.label;
+          labelEl.classList.add('visible');
+          defaultEl.classList.remove('visible');
+        } else {
+          labelEl.classList.remove('visible');
+          defaultEl.classList.add('visible');
+        }
+      }
+
+      btns.forEach(btn => {
+        btn.addEventListener('click', () => { selected = +btn.dataset.value; update(selected); });
+        btn.addEventListener('mouseenter', () => update(+btn.dataset.value));
+        btn.addEventListener('mouseleave', () => update(selected));
+      });
+    })();
 
     // auto-fire the big hero title on page load
     const bigTitle = document.querySelector('.hero-big-scramble [data-scramble]');
