@@ -3,522 +3,349 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pong — 2 Players</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;900&family=Inter:wght@500;600&display=swap" rel="stylesheet">
+  <title>2 Player Games</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
     body {
-      background: #0a0a0a;
+      background: #080808;
+      color: #e0e0e0;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      font-family: 'Space Grotesk', sans-serif;
       overflow: hidden;
       user-select: none;
     }
 
-    /* ── MENU ── */
-    #menu {
+    .screen { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 24px; }
+    .screen.on { display: flex; animation: up 0.3s ease; }
+    @keyframes up { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── HUB ── */
+    #hub { gap: 40px; }
+
+    .hub-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: #333;
       text-align: center;
-      animation: up 0.4s ease;
     }
 
-    @keyframes up { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    .game-cards { display: flex; gap: 20px; }
 
-    #menu h1 {
-      font-size: 5rem;
-      font-weight: 900;
-      color: #fff;
-      letter-spacing: -2px;
-      margin-bottom: 8px;
-    }
-
-    #menu p { color: #444; font-size: 1rem; margin-bottom: 48px; font-family: 'Inter', sans-serif; }
-
-    .controls-row {
-      display: flex;
-      gap: 40px;
-      justify-content: center;
-      margin-bottom: 48px;
-    }
-
-    .ctrl-box {
+    .game-card {
       background: #111;
-      border: 1px solid #222;
-      border-radius: 12px;
-      padding: 20px 28px;
+      border: 1px solid #1e1e1e;
+      border-radius: 16px;
+      padding: 36px 40px;
       text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 260px;
     }
 
-    .ctrl-label { font-size: 0.7rem; color: #444; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; font-family:'Inter',sans-serif; }
-    .ctrl-player { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
-    .ctrl-player.left  { color: #4f8eff; }
-    .ctrl-player.right { color: #ff4f4f; }
+    .game-card:hover { border-color: #333; transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.4); }
+    .game-card:hover .card-icon { transform: scale(1.15); }
+    .game-card:hover .play-tag { opacity: 1; }
 
-    .key-pair { display: flex; gap: 8px; justify-content: center; }
+    .card-icon { font-size: 3.5rem; margin-bottom: 16px; display: block; transition: transform 0.2s; }
+    .card-name { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 900; color: #fff; margin-bottom: 6px; }
+    .card-desc { font-size: 0.8rem; color: #444; line-height: 1.5; margin-bottom: 16px; }
+    .play-tag  { font-size: 0.72rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #fff; opacity: 0; transition: opacity 0.2s; }
 
+    .card-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+
+    .badge-blue { background: rgba(79,142,255,0.15); color: #4f8eff; border: 1px solid rgba(79,142,255,0.2); }
+    .badge-green { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+
+    /* ── SHARED ── */
     kbd {
       background: #1a1a1a;
-      border: 1px solid #333;
-      border-bottom: 3px solid #333;
-      border-radius: 6px;
-      padding: 6px 12px;
+      border: 1px solid #2a2a2a;
+      border-bottom: 3px solid #2a2a2a;
+      border-radius: 5px;
+      padding: 4px 10px;
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.9rem;
-      color: #ccc;
+      font-size: 0.85rem;
+      color: #bbb;
     }
 
-    .play-btn {
-      background: #fff;
-      color: #000;
-      border: none;
-      padding: 16px 60px;
-      border-radius: 50px;
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.1rem;
-      font-weight: 700;
+    .back-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: #111;
+      border: 1px solid #1e1e1e;
+      color: #444;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
       cursor: pointer;
-      letter-spacing: 1px;
       transition: all 0.15s;
+      z-index: 50;
+      display: none;
     }
 
-    .play-btn:hover { background: #ddd; transform: scale(1.04); }
+    .back-btn.show { display: block; }
+    .back-btn:hover { color: #fff; border-color: #333; }
 
-    .win-to { color: #333; font-size: 0.8rem; font-family:'Inter',sans-serif; margin-top: 16px; }
-
-    /* ── GAME ── */
-    #game { display: none; flex-direction: column; align-items: center; gap: 16px; }
+    /* ── PONG ── */
+    #pong { gap: 14px; }
 
     .hud {
       display: flex;
       align-items: center;
       gap: 60px;
-      width: 760px;
     }
 
-    .hud-player {
-      flex: 1;
+    .hud-side { flex: 1; }
+    .hud-side.right { text-align: right; }
+    .hud-name  { font-size: 0.68rem; color: #2a2a2a; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+    .hud-score { font-family: 'Space Grotesk', sans-serif; font-size: 3.2rem; font-weight: 900; line-height: 1; }
+    .blue { color: #4f8eff; }
+    .red  { color: #ff4f4f; }
+
+    .hud-center { text-align: center; min-width: 80px; }
+    .hud-mid { font-size: 0.75rem; color: #2a2a2a; }
+
+    #pong-canvas { border-radius: 8px; background: #000; display: block; }
+
+    .hint { font-size: 0.7rem; color: #222; letter-spacing: 1px; }
+
+    /* ── SNAKE ── */
+    #snake { gap: 14px; }
+
+    .snake-hud {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: 60px;
     }
 
-    .hud-player.right { align-items: flex-end; text-align: right; }
+    #snake-canvas { border-radius: 8px; display: block; }
 
-    .hud-name { font-size: 0.7rem; color: #333; letter-spacing: 2px; text-transform: uppercase; font-family:'Inter',sans-serif; margin-bottom: 4px; }
-    .hud-score { font-size: 3.5rem; font-weight: 900; color: #fff; line-height: 1; }
-    .hud-score.left-score  { color: #4f8eff; }
-    .hud-score.right-score { color: #ff4f4f; }
-
-    .hud-center { text-align: center; }
-    .hud-info { font-size: 0.75rem; color: #333; font-family:'Inter',sans-serif; }
-
-    canvas {
-      border-radius: 8px;
-      display: block;
-      background: #000;
-    }
-
-    .hint { color: #2a2a2a; font-size: 0.75rem; font-family:'Inter',sans-serif; letter-spacing: 1px; }
-
-    /* ── WIN ── */
-    #win-screen {
+    /* ── WIN OVERLAY ── */
+    #win-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
       display: none;
-      text-align: center;
-      animation: up 0.4s ease;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      animation: up 0.3s ease;
     }
 
-    #win-screen h2 { font-size: 3.5rem; font-weight: 900; color: #fff; margin-bottom: 8px; }
-    #win-screen p  { color: #444; font-family:'Inter',sans-serif; margin-bottom: 40px; }
+    #win-overlay.on { display: flex; }
 
-    .final-row { display: flex; gap: 20px; justify-content: center; margin-bottom: 40px; }
+    .win-emoji { font-size: 4rem; margin-bottom: 16px; animation: bounce 0.5s ease infinite alternate; }
+    @keyframes bounce { to{transform:translateY(-10px)} }
+    .win-title { font-family:'Space Grotesk',sans-serif; font-size:3rem; font-weight:900; color:#fff; margin-bottom:8px; }
+    .win-sub   { color:#444; font-size:0.95rem; margin-bottom:36px; }
+
+    .final-row { display:flex; gap:16px; margin-bottom:36px; }
 
     .final-box {
       background: #111;
-      border: 1px solid #222;
+      border: 1px solid #1e1e1e;
       border-radius: 12px;
-      padding: 24px 40px;
+      padding: 20px 36px;
       text-align: center;
     }
 
-    .final-box.winner { border-color: #fff; box-shadow: 0 0 30px rgba(255,255,255,0.08); }
-    .final-box-name   { font-size: 0.7rem; color: #444; letter-spacing: 2px; text-transform: uppercase; font-family:'Inter',sans-serif; margin-bottom: 8px; }
-    .final-box-score  { font-size: 3rem; font-weight: 900; color: #fff; }
-    .final-box-score.blue { color: #4f8eff; }
-    .final-box-score.red  { color: #ff4f4f; }
+    .final-box.w { border-color: #333; box-shadow: 0 0 24px rgba(255,255,255,0.05); }
+    .final-box-label { font-size:0.68rem; color:#333; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; }
+    .final-box-score { font-family:'Space Grotesk',sans-serif; font-size:2.8rem; font-weight:900; }
 
-    .btn-row { display: flex; gap: 12px; justify-content: center; }
+    .btn-row { display:flex; gap:12px; }
 
-    .rematch-btn {
+    .primary-btn {
       background: #fff;
       color: #000;
       border: none;
       padding: 13px 36px;
       border-radius: 50px;
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 700;
       cursor: pointer;
+      letter-spacing: 1px;
       transition: all 0.15s;
     }
 
-    .rematch-btn:hover { background: #ddd; }
+    .primary-btn:hover { background: #ddd; }
 
-    .menu-btn {
+    .ghost-btn {
       background: transparent;
       color: #444;
-      border: 1px solid #222;
+      border: 1px solid #1e1e1e;
       padding: 13px 28px;
       border-radius: 50px;
       font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
+      font-size: 0.875rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.15s;
     }
 
-    .menu-btn:hover { color: #fff; border-color: #444; }
+    .ghost-btn:hover { color:#fff; border-color:#333; }
 
     /* ── PARTICLES ── */
     .prt {
       position: fixed;
       pointer-events: none;
-      border-radius: 50%;
       animation: pfall 1.4s ease-out forwards;
-      z-index: 99;
+      z-index: 200;
     }
     @keyframes pfall { 0%{opacity:1;transform:translateY(0) rotate(0)} 100%{opacity:0;transform:translateY(500px) rotate(600deg)} }
   </style>
 </head>
 <body>
 
-<!-- MENU -->
-<div id="menu">
-  <h1>PONG</h1>
-  <p>First to 7 wins</p>
+<button class="back-btn" id="back-btn" onclick="goHub()">← Games</button>
 
-  <div class="controls-row">
-    <div class="ctrl-box">
-      <div class="ctrl-label">Left Player</div>
-      <div class="ctrl-player left">Player 1</div>
-      <div class="key-pair"><kbd>W</kbd><kbd>S</kbd></div>
+<!-- ── HUB ── -->
+<div class="screen on" id="hub">
+  <div class="hub-title">2 Player Games</div>
+  <div class="game-cards">
+    <div class="game-card" onclick="openPong()">
+      <span class="card-icon">🏓</span>
+      <div class="card-badge badge-blue">Classic</div>
+      <div class="card-name">Pong</div>
+      <div class="card-desc">Deflect the ball past your opponent's paddle. First to 7 wins.</div>
+      <div class="play-tag">Play →</div>
     </div>
-    <div class="ctrl-box">
-      <div class="ctrl-label">Right Player</div>
-      <div class="ctrl-player right">Player 2</div>
-      <div class="key-pair"><kbd>↑</kbd><kbd>↓</kbd></div>
+    <div class="game-card" onclick="openSnake()">
+      <span class="card-icon">🐍</span>
+      <div class="card-badge badge-green">Battle</div>
+      <div class="card-name">Snake</div>
+      <div class="card-desc">Grow your snake, eat apples, force your opponent to crash. First to 5 rounds.</div>
+      <div class="play-tag">Play →</div>
     </div>
   </div>
-
-  <button class="play-btn" onclick="startGame()">PLAY</button>
-  <div class="win-to">First to 7 wins · ESC to pause</div>
 </div>
 
-<!-- GAME -->
-<div id="game">
-  <div class="hud">
-    <div class="hud-player left">
+<!-- ── PONG ── -->
+<div class="screen" id="pong">
+  <div class="hud" style="width:760px">
+    <div class="hud-side left">
       <div class="hud-name">Player 1</div>
-      <div class="hud-score left-score" id="s1">0</div>
+      <div class="hud-score blue" id="p-s1">0</div>
     </div>
     <div class="hud-center">
-      <div class="hud-info" id="hud-info">— vs —</div>
+      <div class="hud-mid" id="p-mid">— vs —</div>
     </div>
-    <div class="hud-player right">
+    <div class="hud-side right">
       <div class="hud-name">Player 2</div>
-      <div class="hud-score right-score" id="s2">0</div>
+      <div class="hud-score red" id="p-s2">0</div>
     </div>
   </div>
-  <canvas id="c" width="760" height="480"></canvas>
-  <div class="hint">W / S · · · ESC pause · · · ↑ / ↓</div>
+  <canvas id="pong-canvas" width="760" height="480"></canvas>
+  <div class="hint">W / S &nbsp;·&nbsp; ESC pause &nbsp;·&nbsp; ↑ / ↓ &nbsp;·&nbsp; First to 7</div>
 </div>
 
-<!-- WIN -->
-<div id="win-screen">
-  <h2 id="win-title">Player 1 Wins!</h2>
-  <p id="win-sub">GG</p>
-  <div class="final-row">
-    <div class="final-box" id="fb1">
-      <div class="final-box-name">Player 1</div>
-      <div class="final-box-score blue" id="fs1">0</div>
+<!-- ── SNAKE ── -->
+<div class="screen" id="snake">
+  <div class="snake-hud" style="width:600px">
+    <div class="hud-side left">
+      <div class="hud-name">Player 1 · WASD</div>
+      <div class="hud-score blue" id="sn-s1">0</div>
     </div>
-    <div class="final-box" id="fb2">
-      <div class="final-box-name">Player 2</div>
-      <div class="final-box-score red" id="fs2">0</div>
+    <div class="hud-center">
+      <div class="hud-mid" id="sn-mid">Rounds</div>
+    </div>
+    <div class="hud-side right">
+      <div class="hud-name">↑↓←→ · Player 2</div>
+      <div class="hud-score red" id="sn-s2">0</div>
+    </div>
+  </div>
+  <canvas id="snake-canvas" width="600" height="600"></canvas>
+  <div class="hint">Eat 🍎 to grow &nbsp;·&nbsp; Crash = lose the round &nbsp;·&nbsp; First to 5 rounds</div>
+</div>
+
+<!-- ── WIN OVERLAY ── -->
+<div id="win-overlay">
+  <div class="win-emoji" id="w-emoji">🏆</div>
+  <div class="win-title" id="w-title">Player 1 Wins!</div>
+  <div class="win-sub"   id="w-sub">GG!</div>
+  <div class="final-row">
+    <div class="final-box" id="wf1">
+      <div class="final-box-label">Player 1</div>
+      <div class="final-box-score blue" id="wf-s1">0</div>
+    </div>
+    <div class="final-box" id="wf2">
+      <div class="final-box-label">Player 2</div>
+      <div class="final-box-score red" id="wf-s2">0</div>
     </div>
   </div>
   <div class="btn-row">
-    <button class="rematch-btn" onclick="rematch()">↺ Rematch</button>
-    <button class="menu-btn" onclick="goMenu()">Menu</button>
+    <button class="primary-btn" id="w-rematch">↺ Rematch</button>
+    <button class="ghost-btn" onclick="winGoHub()">All Games</button>
   </div>
 </div>
 
 <script>
-const WIN = 7;
-const cv  = document.getElementById('c');
-const ctx = cv.getContext('2d');
-const W   = cv.width, H = cv.height;
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════
+let currentGame = null;
 
-// ── GAME STATE ────────────────────────────────────────────
-const PAD_W = 12, PAD_H = 80, PAD_SPEED = 6, BALL_R = 9;
-const INIT_SPEED = 5;
-
-let score1, score2, paused, running, animId;
-let paddle1, paddle2, ball, keys, particles;
-let countdown, cdVal;
-
-function initState() {
-  paddle1 = { x: 20,       y: H/2 - PAD_H/2, dy: 0 };
-  paddle2 = { x: W-20-PAD_W, y: H/2 - PAD_H/2, dy: 0 };
-  ball    = resetBall();
-  keys    = {};
-  particles = [];
-  paused  = false;
-}
-
-function resetBall(scorer) {
-  const angle  = (Math.random() * 60 - 30) * Math.PI / 180;
-  const dir    = scorer === 1 ? 1 : scorer === 2 ? -1 : (Math.random() > .5 ? 1 : -1);
-  return {
-    x: W/2, y: H/2,
-    vx: dir * INIT_SPEED * Math.cos(angle),
-    vy: INIT_SPEED * Math.sin(angle),
-    speed: INIT_SPEED,
-    trail: []
-  };
-}
-
-// ── SCREENS ───────────────────────────────────────────────
 function show(id) {
-  ['menu','game','win-screen'].forEach(s => {
-    document.getElementById(s).style.display = 'none';
-  });
-  document.getElementById(id).style.display = id==='game' ? 'flex' : 'block';
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  document.getElementById('back-btn').className = 'back-btn' + (id!=='hub' ? ' show' : '');
 }
 
-function startGame() {
-  score1 = 0; score2 = 0;
-  show('game');
-  updateHUD();
-  initState();
-  startCountdown(3, () => { running = true; loop(); });
+function goHub() {
+  if (currentGame === 'pong')  pongStop();
+  if (currentGame === 'snake') snakeStop();
+  currentGame = null;
+  hideWin();
+  show('hub');
 }
 
-function rematch() { startGame(); }
+function winGoHub() { hideWin(); goHub(); }
 
-function goMenu() {
-  running = false;
-  cancelAnimationFrame(animId);
-  clearTimeout(countdown);
-  show('menu');
+// ═══════════════════════════════════════════════════════════
+// WIN OVERLAY
+// ═══════════════════════════════════════════════════════════
+function showWin(winner, loser, s1, s2, rematchFn) {
+  document.getElementById('w-title').textContent  = `${winner} Wins!`;
+  document.getElementById('w-sub').textContent    = `${s1} — ${s2}`;
+  document.getElementById('wf-s1').textContent    = s1;
+  document.getElementById('wf-s2').textContent    = s2;
+  document.getElementById('wf1').className = 'final-box' + (s1 > s2 ? ' w' : '');
+  document.getElementById('wf2').className = 'final-box' + (s2 > s1 ? ' w' : '');
+  document.getElementById('w-rematch').onclick = () => { hideWin(); rematchFn(); };
+  document.getElementById('win-overlay').classList.add('on');
+  confettiBurst(s1 > s2 ? '#4f8eff' : '#ff4f4f');
 }
 
-// ── COUNTDOWN ─────────────────────────────────────────────
-function startCountdown(n, cb) {
-  running = false;
-  cdVal = n;
-  document.getElementById('hud-info').textContent = n;
-  if (n <= 0) { document.getElementById('hud-info').textContent = 'GO!'; setTimeout(cb, 400); return; }
-  countdown = setTimeout(() => startCountdown(n-1, cb), 900);
-}
+function hideWin() { document.getElementById('win-overlay').classList.remove('on'); }
 
-// ── MAIN LOOP ─────────────────────────────────────────────
-function loop() {
-  if (!running) return;
-  update();
-  render();
-  animId = requestAnimationFrame(loop);
-}
-
-function update() {
-  if (paused) return;
-
-  // Paddles
-  if (keys['w'] || keys['W']) paddle1.y -= PAD_SPEED;
-  if (keys['s'] || keys['S']) paddle1.y += PAD_SPEED;
-  if (keys['ArrowUp'])   paddle2.y -= PAD_SPEED;
-  if (keys['ArrowDown']) paddle2.y += PAD_SPEED;
-
-  paddle1.y = clamp(paddle1.y, 0, H - PAD_H);
-  paddle2.y = clamp(paddle2.y, 0, H - PAD_H);
-
-  // Ball trail
-  ball.trail.push({ x: ball.x, y: ball.y });
-  if (ball.trail.length > 10) ball.trail.shift();
-
-  // Ball move
-  ball.x += ball.vx;
-  ball.y += ball.vy;
-
-  // Wall bounce (top/bottom)
-  if (ball.y - BALL_R <= 0) { ball.y = BALL_R; ball.vy = Math.abs(ball.vy); }
-  if (ball.y + BALL_R >= H) { ball.y = H - BALL_R; ball.vy = -Math.abs(ball.vy); }
-
-  // Paddle 1 collision
-  if (ball.vx < 0 &&
-      ball.x - BALL_R <= paddle1.x + PAD_W &&
-      ball.x - BALL_R >= paddle1.x &&
-      ball.y >= paddle1.y && ball.y <= paddle1.y + PAD_H) {
-    deflect(ball, paddle1, 1);
-  }
-
-  // Paddle 2 collision
-  if (ball.vx > 0 &&
-      ball.x + BALL_R >= paddle2.x &&
-      ball.x + BALL_R <= paddle2.x + PAD_W &&
-      ball.y >= paddle2.y && ball.y <= paddle2.y + PAD_H) {
-    deflect(ball, paddle2, -1);
-  }
-
-  // Score
-  if (ball.x + BALL_R < 0)  { score2++; scored(2); }
-  if (ball.x - BALL_R > W)  { score1++; scored(1); }
-
-  // Particles
-  particles = particles.filter(p => p.life > 0);
-  particles.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.life--; p.vy+=0.15; });
-}
-
-function deflect(ball, pad, dir) {
-  const rel   = (ball.y - (pad.y + PAD_H/2)) / (PAD_H/2);
-  const angle = rel * 60 * Math.PI / 180;
-  ball.speed  = Math.min(ball.speed + 0.4, 16);
-  ball.vx     = dir * ball.speed * Math.cos(angle);
-  ball.vy     = ball.speed * Math.sin(angle);
-  spawnParticles(ball.x, ball.y, dir === 1 ? '#4f8eff' : '#ff4f4f', 8);
-}
-
-function scored(player) {
-  updateHUD();
-  spawnParticles(W/2, H/2, player===1 ? '#4f8eff' : '#ff4f4f', 30);
-  confettiBurst(player===1 ? '#4f8eff' : '#ff4f4f');
-  if (score1 >= WIN || score2 >= WIN) {
-    running = false;
-    cancelAnimationFrame(animId);
-    setTimeout(() => showWin(), 600);
-    return;
-  }
-  running = false;
-  ball = resetBall(player===1 ? 2 : 1);
-  startCountdown(2, () => { running = true; loop(); });
-}
-
-function showWin() {
-  const winner = score1 >= WIN ? 'Player 1' : 'Player 2';
-  document.getElementById('win-title').textContent = `${winner} Wins!`;
-  document.getElementById('win-sub').textContent   = `${score1} — ${score2} · Great game!`;
-  document.getElementById('fs1').textContent = score1;
-  document.getElementById('fs2').textContent = score2;
-  document.getElementById('fb1').className = 'final-box' + (score1 > score2 ? ' winner' : '');
-  document.getElementById('fb2').className = 'final-box' + (score2 > score1 ? ' winner' : '');
-  show('win-screen');
-}
-
-// ── RENDER ────────────────────────────────────────────────
-function render() {
-  ctx.clearRect(0, 0, W, H);
-
-  // Center line
-  ctx.setLineDash([8, 12]);
-  ctx.strokeStyle = '#1a1a1a';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(W/2, 0);
-  ctx.lineTo(W/2, H);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Ball trail
-  ball.trail.forEach((p, i) => {
-    const alpha = (i / ball.trail.length) * 0.25;
-    const r     = BALL_R * (i / ball.trail.length) * 0.7;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, r, 0, Math.PI*2);
-    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-    ctx.fill();
-  });
-
-  // Ball
-  const grd = ctx.createRadialGradient(ball.x - 3, ball.y - 3, 1, ball.x, ball.y, BALL_R);
-  grd.addColorStop(0, '#fff');
-  grd.addColorStop(1, '#aaa');
-  ctx.beginPath();
-  ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI*2);
-  ctx.fillStyle = grd;
-  ctx.fill();
-
-  // Paddles
-  drawPaddle(paddle1.x, paddle1.y, '#4f8eff');
-  drawPaddle(paddle2.x, paddle2.y, '#ff4f4f');
-
-  // Canvas particles
-  particles.forEach(p => {
-    ctx.globalAlpha = p.life / p.maxLife;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-    ctx.fillStyle = p.color;
-    ctx.fill();
-  });
-  ctx.globalAlpha = 1;
-
-  // Pause overlay
-  if (paused) {
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 32px Space Grotesk';
-    ctx.textAlign = 'center';
-    ctx.fillText('PAUSED', W/2, H/2 - 10);
-    ctx.font = '14px Inter';
-    ctx.fillStyle = '#444';
-    ctx.fillText('Press ESC to resume', W/2, H/2 + 24);
-    ctx.textAlign = 'left';
-  }
-}
-
-function drawPaddle(x, y, color) {
-  const r = 6;
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + PAD_W, y, x + PAD_W, y + PAD_H, r);
-  ctx.arcTo(x + PAD_W, y + PAD_H, x, y + PAD_H, r);
-  ctx.arcTo(x, y + PAD_H, x, y, r);
-  ctx.arcTo(x, y, x + PAD_W, y, r);
-  ctx.closePath();
-  const g = ctx.createLinearGradient(x, y, x + PAD_W, y);
-  g.addColorStop(0, color + 'cc');
-  g.addColorStop(1, color);
-  ctx.fillStyle = g;
-  ctx.fill();
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 14;
-  ctx.fill();
-  ctx.shadowBlur = 0;
-}
-
-// ── HELPERS ───────────────────────────────────────────────
-function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
-
-function spawnParticles(x, y, color, n) {
-  for (let i = 0; i < n; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 4 + 1;
-    particles.push({
-      x, y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 2,
-      r: Math.random() * 4 + 2,
-      color,
-      life: 30, maxLife: 30
-    });
-  }
-}
-
-function confettiBurst(color) {
-  const extras = ['#fff', '#f0c040', color];
-  for (let i = 0; i < 40; i++) {
+// ═══════════════════════════════════════════════════════════
+// CONFETTI
+// ═══════════════════════════════════════════════════════════
+function confettiBurst(col) {
+  const extras = ['#fff', '#f0c040', col];
+  for (let i = 0; i < 80; i++) {
     setTimeout(() => {
       const p = document.createElement('div');
       const s = Math.random() * 10 + 5;
@@ -526,24 +353,418 @@ function confettiBurst(color) {
       p.style.cssText = `width:${s}px;height:${s}px;background:${extras[Math.floor(Math.random()*extras.length)]};left:${Math.random()*100}vw;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'}`;
       document.body.appendChild(p);
       setTimeout(() => p.remove(), 1500);
-    }, i * 15);
+    }, i * 12);
   }
 }
 
-function updateHUD() {
-  document.getElementById('s1').textContent = score1;
-  document.getElementById('s2').textContent = score2;
-  document.getElementById('hud-info').textContent = '— vs —';
+function miniConfetti(x, y, col) {
+  const el = document.createElement('div');
+  el.style.cssText=`position:fixed;left:${x}px;top:${y}px;width:8px;height:8px;background:${col};border-radius:50%;pointer-events:none;animation:pfall 1s ease-out forwards;z-index:200`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1000);
 }
 
-// ── INPUT ─────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// PONG
+// ═══════════════════════════════════════════════════════════
+const pc  = document.getElementById('pong-canvas');
+const pctx = pc.getContext('2d');
+const PW = pc.width, PH = pc.height;
+const PADW = 12, PADH = 80, PSPD = 6, BALLR = 9, PWIN = 7;
+
+let pong = {};
+let pKeys = {};
+let pAnimId = null, pTimer = null;
+
+function openPong() {
+  currentGame = 'pong';
+  show('pong');
+  pongInit();
+}
+
+function pongInit() {
+  pong = {
+    s1: 0, s2: 0,
+    p1: { x: 20,          y: PH/2 - PADH/2 },
+    p2: { x: PW-20-PADW,  y: PH/2 - PADH/2 },
+    ball: pongBall(),
+    paused: false,
+    running: false,
+    particles: []
+  };
+  pongUpdateHUD();
+  pongCountdown(3, pongRun);
+}
+
+function pongBall(scorer) {
+  const a = (Math.random()*60 - 30) * Math.PI / 180;
+  const d = scorer===1 ? 1 : scorer===2 ? -1 : (Math.random()>.5 ? 1 : -1);
+  return { x:PW/2, y:PH/2, vx: d*5*Math.cos(a), vy: 5*Math.sin(a), spd:5, trail:[] };
+}
+
+function pongCountdown(n, cb) {
+  pong.running = false;
+  document.getElementById('p-mid').textContent = n > 0 ? n : 'GO!';
+  if (n <= 0) { pTimer = setTimeout(cb, 350); return; }
+  pTimer = setTimeout(() => pongCountdown(n-1, cb), 800);
+}
+
+function pongRun() {
+  pong.running = true;
+  document.getElementById('p-mid').textContent = '— vs —';
+  pAnimId = requestAnimationFrame(pongLoop);
+}
+
+function pongStop() {
+  pong.running = false;
+  cancelAnimationFrame(pAnimId);
+  clearTimeout(pTimer);
+}
+
+function pongLoop() {
+  if (!pong.running) return;
+  pongUpdate();
+  pongDraw();
+  pAnimId = requestAnimationFrame(pongLoop);
+}
+
+function pongUpdate() {
+  if (pong.paused) return;
+  const { p1, p2, ball } = pong;
+
+  if (pKeys['w'] || pKeys['W']) p1.y -= PSPD;
+  if (pKeys['s'] || pKeys['S']) p1.y += PSPD;
+  if (pKeys['ArrowUp'])   p2.y -= PSPD;
+  if (pKeys['ArrowDown']) p2.y += PSPD;
+  p1.y = clamp(p1.y, 0, PH-PADH);
+  p2.y = clamp(p2.y, 0, PH-PADH);
+
+  ball.trail.push({x:ball.x, y:ball.y});
+  if (ball.trail.length > 10) ball.trail.shift();
+
+  ball.x += ball.vx;
+  ball.y += ball.vy;
+
+  if (ball.y - BALLR <= 0) { ball.y = BALLR;       ball.vy =  Math.abs(ball.vy); }
+  if (ball.y + BALLR >= PH){ ball.y = PH-BALLR;    ball.vy = -Math.abs(ball.vy); }
+
+  // Paddle hits
+  if (ball.vx < 0 && ball.x-BALLR <= p1.x+PADW && ball.x-BALLR >= p1.x && ball.y >= p1.y && ball.y <= p1.y+PADH) pongDeflect(ball, p1, 1);
+  if (ball.vx > 0 && ball.x+BALLR >= p2.x     && ball.x+BALLR <= p2.x+PADW && ball.y >= p2.y && ball.y <= p2.y+PADH) pongDeflect(ball, p2, -1);
+
+  if (ball.x + BALLR < 0)  { pong.s2++; pongScored(2); }
+  if (ball.x - BALLR > PW) { pong.s1++; pongScored(1); }
+
+  pong.particles = pong.particles.filter(p=>p.life>0);
+  pong.particles.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.life--; p.vy+=0.15; });
+}
+
+function pongDeflect(ball, pad, dir) {
+  const rel = (ball.y-(pad.y+PADH/2))/(PADH/2);
+  const ang = rel * 60 * Math.PI/180;
+  ball.spd = Math.min(ball.spd+0.4, 16);
+  ball.vx  = dir * ball.spd * Math.cos(ang);
+  ball.vy  = ball.spd * Math.sin(ang);
+  pongParticles(ball.x, ball.y, dir===1 ? '#4f8eff' : '#ff4f4f');
+}
+
+function pongScored(who) {
+  pongUpdateHUD();
+  pongParticles(PW/2, PH/2, who===1 ? '#4f8eff' : '#ff4f4f', 25);
+  if (pong.s1 >= PWIN || pong.s2 >= PWIN) {
+    pongStop();
+    setTimeout(() => {
+      const w = pong.s1>=PWIN ? 'Player 1' : 'Player 2';
+      showWin(w, '', pong.s1, pong.s2, pongInit);
+    }, 500);
+    return;
+  }
+  pong.ball = pongBall(who===1 ? 2 : 1);
+  pongCountdown(2, pongRun);
+}
+
+function pongUpdateHUD() {
+  document.getElementById('p-s1').textContent = pong.s1||0;
+  document.getElementById('p-s2').textContent = pong.s2||0;
+}
+
+function pongParticles(x, y, col, n=10) {
+  for (let i=0;i<n;i++) {
+    const a=Math.random()*Math.PI*2, s=Math.random()*4+1;
+    pong.particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-2,r:Math.random()*4+2,color:col,life:30,maxLife:30});
+  }
+}
+
+function pongDraw() {
+  pctx.clearRect(0,0,PW,PH);
+  pctx.setLineDash([8,14]);
+  pctx.strokeStyle='#141414'; pctx.lineWidth=2;
+  pctx.beginPath(); pctx.moveTo(PW/2,0); pctx.lineTo(PW/2,PH); pctx.stroke();
+  pctx.setLineDash([]);
+
+  const {p1,p2,ball,paused,particles} = pong;
+
+  ball.trail.forEach((t,i)=>{
+    const a=(i/ball.trail.length)*0.2, r=BALLR*(i/ball.trail.length)*0.6;
+    pctx.beginPath(); pctx.arc(t.x,t.y,r,0,Math.PI*2);
+    pctx.fillStyle=`rgba(255,255,255,${a})`; pctx.fill();
+  });
+
+  const bg=pctx.createRadialGradient(ball.x-3,ball.y-3,1,ball.x,ball.y,BALLR);
+  bg.addColorStop(0,'#fff'); bg.addColorStop(1,'#aaa');
+  pctx.beginPath(); pctx.arc(ball.x,ball.y,BALLR,0,Math.PI*2);
+  pctx.fillStyle=bg; pctx.fill();
+
+  drawPaddle(pctx, p1.x, p1.y, PADW, PADH, '#4f8eff');
+  drawPaddle(pctx, p2.x, p2.y, PADW, PADH, '#ff4f4f');
+
+  particles.forEach(p=>{
+    pctx.globalAlpha=p.life/p.maxLife;
+    pctx.beginPath(); pctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    pctx.fillStyle=p.color; pctx.fill();
+  });
+  pctx.globalAlpha=1;
+
+  if (paused) {
+    pctx.fillStyle='rgba(0,0,0,0.6)'; pctx.fillRect(0,0,PW,PH);
+    pctx.fillStyle='#fff'; pctx.font='bold 28px Space Grotesk'; pctx.textAlign='center';
+    pctx.fillText('PAUSED',PW/2,PH/2-8);
+    pctx.font='13px Inter'; pctx.fillStyle='#444';
+    pctx.fillText('Press ESC to resume',PW/2,PH/2+22);
+    pctx.textAlign='left';
+  }
+}
+
+function drawPaddle(ctx, x, y, w, h, col) {
+  const r=6;
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  const g=ctx.createLinearGradient(x,y,x+w,y);
+  g.addColorStop(0,col+'99'); g.addColorStop(1,col);
+  ctx.fillStyle=g;
+  ctx.shadowColor=col; ctx.shadowBlur=12; ctx.fill(); ctx.shadowBlur=0;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SNAKE BATTLE
+// ═══════════════════════════════════════════════════════════
+const sc  = document.getElementById('snake-canvas');
+const sctx = sc.getContext('2d');
+const COLS = 30, ROWS = 30;
+const CELL = sc.width / COLS;
+const SWIN = 5;
+const TICK = 120;
+
+let snake = {};
+let snakeTimer = null;
+
+function openSnake() {
+  currentGame = 'snake';
+  show('snake');
+  snakeInit();
+}
+
+function snakeInit() {
+  snake = {
+    s1: 0, s2: 0,
+    round: 0
+  };
+  snakeUpdateHUD();
+  snakeRound();
+}
+
+function snakeRound() {
+  snake.round++;
+  snake.sn1 = { body: [{x:7,y:15},{x:6,y:15},{x:5,y:15}], dir:{x:1,y:0}, next:{x:1,y:0}, alive:true, grew:0 };
+  snake.sn2 = { body: [{x:22,y:15},{x:23,y:15},{x:24,y:15}], dir:{x:-1,y:0}, next:{x:-1,y:0}, alive:true, grew:0 };
+  snake.apple  = spawnApple();
+  snake.bonus  = null;
+  snake.bonusTimer = 0;
+  snake.flash  = 0;
+  snake.running = false;
+  snakeDraw();
+  snakeCountdown(3);
+}
+
+function snakeCountdown(n) {
+  document.getElementById('sn-mid').textContent = n > 0 ? n : 'GO!';
+  if (n <= 0) { setTimeout(()=>{ document.getElementById('sn-mid').textContent='Rounds'; snake.running=true; snakeTick(); },400); return; }
+  snakeTimer = setTimeout(()=>snakeCountdown(n-1), 800);
+}
+
+function snakeStop() {
+  snake.running = false;
+  clearTimeout(snakeTimer);
+}
+
+function snakeTick() {
+  if (!snake.running) return;
+  snakeMove(snake.sn1);
+  snakeMove(snake.sn2);
+  snakeCheckCollisions();
+  if (snake.bonus) {
+    snake.bonusTimer--;
+    if (snake.bonusTimer <= 0) snake.bonus = null;
+  }
+  if (Math.random() < 0.015 && !snake.bonus) {
+    snake.bonus = spawnApple([snake.apple]);
+    snake.bonusTimer = 30;
+  }
+  snakeDraw();
+  snakeTimer = setTimeout(snakeTick, TICK);
+}
+
+function snakeMove(sn) {
+  if (!sn.alive) return;
+  sn.dir = { ...sn.next };
+  const head = { x: sn.body[0].x + sn.dir.x, y: sn.body[0].y + sn.dir.y };
+  if (sn.grew > 0) { sn.grew--; }
+  else { sn.body.pop(); }
+  sn.body.unshift(head);
+}
+
+function snakeCheckCollisions() {
+  const {sn1, sn2} = snake;
+  const head1 = sn1.body[0], head2 = sn2.body[0];
+
+  // Wall collision
+  if (sn1.alive && (head1.x<0||head1.x>=COLS||head1.y<0||head1.y>=ROWS)) sn1.alive=false;
+  if (sn2.alive && (head2.x<0||head2.x>=COLS||head2.y<0||head2.y>=ROWS)) sn2.alive=false;
+
+  // Self collision
+  if (sn1.alive && sn1.body.slice(1).some(s=>s.x===head1.x&&s.y===head1.y)) sn1.alive=false;
+  if (sn2.alive && sn2.body.slice(1).some(s=>s.x===head2.x&&s.y===head2.y)) sn2.alive=false;
+
+  // Head-on collision
+  if (sn1.alive && sn2.alive && head1.x===head2.x && head1.y===head2.y) { sn1.alive=false; sn2.alive=false; }
+
+  // Snake cross-collision (head into other body)
+  if (sn1.alive && sn2.body.some(s=>s.x===head1.x&&s.y===head1.y)) sn1.alive=false;
+  if (sn2.alive && sn1.body.some(s=>s.x===head2.x&&s.y===head2.y)) sn2.alive=false;
+
+  // Apple eating
+  [sn1, sn2].forEach((sn,i)=>{
+    if (!sn.alive) return;
+    const head = sn.body[0];
+    if (head.x===snake.apple.x && head.y===snake.apple.y) {
+      sn.grew += 3;
+      snake.apple = spawnApple([...sn1.body,...sn2.body]);
+    }
+    if (snake.bonus && head.x===snake.bonus.x && head.y===snake.bonus.y) {
+      sn.grew += 5;
+      snake.bonus = null;
+    }
+  });
+
+  // Round end
+  if (!sn1.alive || !sn2.alive) {
+    snake.running = false;
+    clearTimeout(snakeTimer);
+    setTimeout(() => {
+      if (sn1.alive && !sn2.alive)      snake.s1++;
+      else if (!sn1.alive && sn2.alive) snake.s2++;
+      // Both dead = no point
+      snakeUpdateHUD();
+      snakeDraw();
+      if (snake.s1 >= SWIN || snake.s2 >= SWIN) {
+        const w = snake.s1>=SWIN ? 'Player 1' : 'Player 2';
+        showWin(w, '', snake.s1, snake.s2, snakeInit);
+      } else {
+        setTimeout(snakeRound, 1200);
+      }
+    }, 400);
+  }
+}
+
+function spawnApple(avoid=[]) {
+  let pos;
+  do { pos = {x:Math.floor(Math.random()*COLS), y:Math.floor(Math.random()*ROWS)}; }
+  while (avoid.some(a=>a.x===pos.x&&a.y===pos.y));
+  return pos;
+}
+
+function snakeUpdateHUD() {
+  document.getElementById('sn-s1').textContent = snake.s1||0;
+  document.getElementById('sn-s2').textContent = snake.s2||0;
+}
+
+function snakeDraw() {
+  sctx.fillStyle = '#0c0c0c';
+  sctx.fillRect(0,0,sc.width,sc.height);
+
+  // Grid
+  sctx.strokeStyle='#111'; sctx.lineWidth=0.5;
+  for (let x=0;x<COLS;x++) { sctx.beginPath(); sctx.moveTo(x*CELL,0); sctx.lineTo(x*CELL,sc.height); sctx.stroke(); }
+  for (let y=0;y<ROWS;y++) { sctx.beginPath(); sctx.moveTo(0,y*CELL); sctx.lineTo(sc.width,y*CELL); sctx.stroke(); }
+
+  // Snakes
+  drawSnake(snake.sn1, '#4f8eff', '#2563eb');
+  drawSnake(snake.sn2, '#ff4f4f', '#dc2626');
+
+  // Apple
+  drawCell(snake.apple.x, snake.apple.y, '#ff0000', '🍎');
+  if (snake.bonus) drawCell(snake.bonus.x, snake.bonus.y, '#f0c040', '⭐');
+}
+
+function drawSnake(sn, col, dark) {
+  if (!sn) return;
+  sn.body.forEach((seg, i) => {
+    const isHead = i===0;
+    const alpha  = sn.alive ? 1 : 0.3;
+    sctx.globalAlpha = alpha;
+    const r = isHead ? 4 : 3;
+    const x = seg.x*CELL+1, y=seg.y*CELL+1, s=CELL-2;
+    sctx.fillStyle = isHead ? col : (i%2===0 ? col+'cc' : dark+'cc');
+    sctx.beginPath();
+    sctx.roundRect(x,y,s,s,r);
+    sctx.fill();
+    if (isHead && sn.alive) {
+      sctx.shadowColor=col; sctx.shadowBlur=10;
+      sctx.fill(); sctx.shadowBlur=0;
+    }
+  });
+  sctx.globalAlpha=1;
+}
+
+function drawCell(x, y, col, emoji) {
+  const px=x*CELL, py=y*CELL;
+  sctx.font=`${CELL*0.8}px serif`;
+  sctx.textAlign='center'; sctx.textBaseline='middle';
+  sctx.fillText(emoji, px+CELL/2, py+CELL/2);
+  sctx.textAlign='left'; sctx.textBaseline='alphabetic';
+}
+
+// ═══════════════════════════════════════════════════════════
+// SHARED INPUT
+// ═══════════════════════════════════════════════════════════
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
 document.addEventListener('keydown', e => {
-  keys[e.key] = true;
-  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
-  if (e.key === 'Escape' && running) { paused = !paused; }
+  pKeys[e.key] = true;
+
+  // Pong pause
+  if (e.key==='Escape' && currentGame==='pong' && pong.running !== undefined) {
+    pong.paused = !pong.paused;
+  }
+
+  // Snake directions — prevent opposite
+  if (currentGame==='snake' && snake.sn1 && snake.sn2) {
+    const sn1=snake.sn1, sn2=snake.sn2;
+    if (e.key==='w'||e.key==='W') { if(sn1.dir.y!==1)  sn1.next={x:0,y:-1}; }
+    if (e.key==='s'||e.key==='S') { if(sn1.dir.y!==-1) sn1.next={x:0,y:1}; }
+    if (e.key==='a'||e.key==='A') { if(sn1.dir.x!==1)  sn1.next={x:-1,y:0}; }
+    if (e.key==='d'||e.key==='D') { if(sn1.dir.x!==-1) sn1.next={x:1,y:0}; }
+    if (e.key==='ArrowUp')    { if(sn2.dir.y!==1)  sn2.next={x:0,y:-1}; }
+    if (e.key==='ArrowDown')  { if(sn2.dir.y!==-1) sn2.next={x:0,y:1}; }
+    if (e.key==='ArrowLeft')  { if(sn2.dir.x!==1)  sn2.next={x:-1,y:0}; }
+    if (e.key==='ArrowRight') { if(sn2.dir.x!==-1) sn2.next={x:1,y:0}; }
+  }
+
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
 });
 
-document.addEventListener('keyup', e => { keys[e.key] = false; });
+document.addEventListener('keyup', e => { pKeys[e.key]=false; });
 </script>
 </body>
 </html>
