@@ -1,9 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Workshop</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+    .card {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 { color: #333; }
+    p { color: #666; }
+    button {
+      background: #0070f3;
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover { background: #005bb5; }
+  </style>
 </head>
 <body>
-  <h1>Hello GitHub!</h1>
+  <div class="card">
+    <h1>Hello, World!</h1>
+    <p>Welcome to my GitHub Workshop page.</p>
+    <button onclick="alert('It works!')">Click Me</button>
+  </div>
 </body>
 </html>
