@@ -862,13 +862,80 @@ function bmMakePlayer(gx, gy, col, idx) {
     maxBombs: 1,
     activeBombs: 0,
     range: 2,
-    moveCooldown: 140,
-    lastMove: 0,
+    speed: 155,        // px per second
     alive: true,
     up: false, down: false, left: false, right: false, bomb: false,
     bombPressed: false,
     idx
   };
+}
+
+// Returns true if grid cell (gx,gy) is solid for movement
+function bmBlocks(gx, gy) {
+  if (gx < 0 || gx >= BM_COLS || gy < 0 || gy >= BM_ROWS) return true;
+  const t = bm.map[gy][gx];
+  if (t === WALL || t === BRICK) return true;
+  if (bm.bombs.some(b => b.gx === gx && b.gy === gy)) return true;
+  return false;
+}
+
+// Smooth pixel-based movement with auto axis-alignment
+function bmMovePlayer(p, dt) {
+  if (!p.alive) return;
+
+  let dx = 0, dy = 0;
+  if (p.up)    dy = -1;
+  if (p.down)  dy =  1;
+  if (p.left)  dx = -1;
+  if (p.right) dx =  1;
+
+  if (dx === 0 && dy === 0) return;
+
+  const step   = p.speed * dt / 1000;
+  const half   = BM_CELL / 2;
+  const margin = 3; // px clearance from wall edge
+
+  if (dx !== 0) {
+    // Moving horizontally → auto-snap vertically toward nearest row centre
+    const rowCy = Math.round((p.py - half) / BM_CELL) * BM_CELL + half;
+    const diff  = rowCy - p.py;
+    p.py += Math.sign(diff) * Math.min(step * 1.8, Math.abs(diff));
+
+    // Leading edge in X
+    const edgeX  = p.px + dx * (half - margin);
+    const nextX  = p.px + dx * step;
+    const nextEdge = nextX + dx * (half - margin);
+    const tileGX = Math.floor(nextEdge / BM_CELL);
+    const tileGY = Math.round((p.py - half) / BM_CELL);
+    if (!bmBlocks(tileGX, tileGY)) p.px = nextX;
+
+  } else {
+    // Moving vertically → auto-snap horizontally toward nearest column centre
+    const colCx = Math.round((p.px - half) / BM_CELL) * BM_CELL + half;
+    const diff  = colCx - p.px;
+    p.px += Math.sign(diff) * Math.min(step * 1.8, Math.abs(diff));
+
+    // Leading edge in Y
+    const nextY    = p.py + dy * step;
+    const nextEdge = nextY + dy * (half - margin);
+    const tileGX   = Math.round((p.px - half) / BM_CELL);
+    const tileGY   = Math.floor(nextEdge / BM_CELL);
+    if (!bmBlocks(tileGX, tileGY)) p.py = nextY;
+  }
+
+  // Clamp inside map bounds
+  p.px = Math.max(half, Math.min((BM_COLS - 1) * BM_CELL + half, p.px));
+  p.py = Math.max(half, Math.min((BM_ROWS - 1) * BM_CELL + half, p.py));
+
+  // Derive grid position from pixel position
+  p.gx = Math.round((p.px - half) / BM_CELL);
+  p.gy = Math.round((p.py - half) / BM_CELL);
+
+  // Powerup pickup
+  const tile = bm.map[p.gy]?.[p.gx];
+  if (tile === PWR_BOMB)  { p.maxBombs++;                              bm.map[p.gy][p.gx] = EMPTY; }
+  if (tile === PWR_RANGE) { p.range++;                                 bm.map[p.gy][p.gx] = EMPTY; }
+  if (tile === PWR_SPEED) { p.speed = Math.min(260, p.speed + 35);    bm.map[p.gy][p.gx] = EMPTY; }
 }
 
 function bmRound() {
@@ -918,44 +985,7 @@ function bmUpdate(now, dt) {
   players.forEach(p => {
     if (!p.alive) return;
 
-    // Smooth interpolation
-    p.px += (p.gx * BM_CELL + BM_CELL/2 - p.px) * 0.3;
-    p.py += (p.gy * BM_CELL + BM_CELL/2 - p.py) * 0.3;
-
-    // Movement with cooldown
-    if (now - p.lastMove >= p.moveCooldown) {
-      let nx = p.gx, ny = p.gy;
-      if (p.up)    ny--;
-      else if (p.down)  ny++;
-      else if (p.left)  nx--;
-      else if (p.right) nx++;
-      else { /* no movement key */ }
-
-      if (nx !== p.gx || ny !== p.gy) {
-        // Bounds check
-        if (nx >= 0 && nx < BM_COLS && ny >= 0 && ny < BM_ROWS) {
-          const tile = map[ny][nx];
-          const hasBomb = bm.bombs.some(b => b.gx === nx && b.gy === ny);
-          if (tile !== WALL && tile !== BRICK && !hasBomb) {
-            p.gx = nx;
-            p.gy = ny;
-            p.lastMove = now;
-
-            // Powerup pickup
-            if (tile === PWR_BOMB) {
-              p.maxBombs++;
-              map[ny][nx] = EMPTY;
-            } else if (tile === PWR_RANGE) {
-              p.range++;
-              map[ny][nx] = EMPTY;
-            } else if (tile === PWR_SPEED) {
-              p.moveCooldown = Math.max(60, p.moveCooldown - 20);
-              map[ny][nx] = EMPTY;
-            }
-          }
-        }
-      }
-    }
+    bmMovePlayer(p, dt);
 
     // Bomb placement
     if (p.bomb && !p.bombPressed) {
