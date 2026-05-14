@@ -3,43 +3,135 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Page</title>
+  <title>Fun Page</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #f0f0f0;
-    }
-    .card {
-      background: white;
-      padding: 40px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    h1 { color: #333; }
-    p { color: #666; }
-    button {
-      background: #0070f3;
+      min-height: 100vh;
+      background: #0f0f1a;
       color: white;
-      border: none;
-      padding: 10px 24px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
-    button:hover { background: #005bb5; }
+
+    h1 {
+      font-size: 3rem;
+      background: linear-gradient(90deg, #ff6ec7, #ffdd57, #57f287, #5865f2);
+      background-size: 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: rainbow 3s linear infinite;
+      margin-bottom: 10px;
+    }
+
+    @keyframes rainbow {
+      0% { background-position: 0%; }
+      100% { background-position: 300%; }
+    }
+
+    p {
+      color: #aaa;
+      margin-bottom: 30px;
+      font-size: 1.1rem;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 50px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.2s;
+    }
+
+    button:hover { transform: scale(1.1); }
+    button:active { transform: scale(0.95); }
+
+    #confetti-btn { background: #ff6ec7; color: #fff; }
+    #emoji-btn    { background: #ffdd57; color: #333; }
+    #dark-btn     { background: #5865f2; color: #fff; }
+
+    #emoji-display {
+      font-size: 4rem;
+      height: 80px;
+      margin-top: 30px;
+      transition: transform 0.2s;
+    }
+
+    .particle {
+      position: fixed;
+      pointer-events: none;
+      border-radius: 50%;
+      animation: fall 1.5s ease-out forwards;
+    }
+
+    @keyframes fall {
+      0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
+      100% { opacity: 0; transform: translateY(400px) rotate(720deg); }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Hello, World!</h1>
-    <p>Welcome to my GitHub Workshop page.</p>
-    <button onclick="alert('It works!')">Click Me</button>
+
+  <h1>Hey There! 👋</h1>
+  <p>This is your fun GitHub Workshop page.</p>
+
+  <div class="buttons">
+    <button id="confetti-btn" onclick="launchConfetti()">🎉 Confetti!</button>
+    <button id="emoji-btn" onclick="randomEmoji()">😎 Random Emoji</button>
+    <button id="dark-btn" onclick="toggleBg()">🌈 Change BG</button>
   </div>
+
+  <div id="emoji-display">🚀</div>
+
+  <script>
+    const emojis = ['🚀','🎸','🦄','🔥','💥','🎉','🐉','⚡','🍕','🎮','🦊','🌈','💎','🎯','🥳'];
+    const bgs = ['#0f0f1a','#1a0f0f','#0f1a0f','#1a1a0f','#0f0f2a'];
+    let bgIndex = 0;
+
+    function randomEmoji() {
+      const el = document.getElementById('emoji-display');
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      el.style.transform = 'scale(1.5)';
+      setTimeout(() => el.style.transform = 'scale(1)', 200);
+    }
+
+    function toggleBg() {
+      bgIndex = (bgIndex + 1) % bgs.length;
+      document.body.style.background = bgs[bgIndex];
+    }
+
+    function launchConfetti() {
+      const colors = ['#ff6ec7','#ffdd57','#57f287','#5865f2','#ff4444'];
+      for (let i = 0; i < 60; i++) {
+        setTimeout(() => {
+          const p = document.createElement('div');
+          p.className = 'particle';
+          p.style.cssText = `
+            width: ${Math.random() * 12 + 6}px;
+            height: ${Math.random() * 12 + 6}px;
+            background: ${colors[Math.floor(Math.random() * colors.length)]};
+            left: ${Math.random() * 100}vw;
+            top: -20px;
+          `;
+          document.body.appendChild(p);
+          setTimeout(() => p.remove(), 1600);
+        }, i * 20);
+      }
+    }
+  </script>
+
 </body>
 </html>
